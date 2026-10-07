@@ -34,7 +34,11 @@ body {
   background: var(--bg);
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;            /* 保險：避免任何橫向溢出造成「左右走位」 */
+  touch-action: manipulation;  /* 停用雙擊縮放，減少誤觸放大 */
 }
+
+img, svg, video { max-width: 100%; height: auto; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -89,7 +93,7 @@ a:hover { text-decoration: underline; }
 
 /* ---------- 版型 ---------- */
 .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 18px; }
-.section { padding: 34px 0; }
+.section { padding-top: 34px; padding-bottom: 34px; }
 .muted { color: var(--muted); }
 .center { text-align: center; }
 
@@ -268,6 +272,8 @@ table.data th, table.data td {
   text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line);
   vertical-align: top;
 }
+/* 只讓表格內的長路徑（<code>）可斷行，避免撐寬整頁；一般文字與標籤不受影響 */
+table.data td code, table.data th code { overflow-wrap: anywhere; word-break: break-word; }
 table.data th { background: #f7f9fc; font-weight: 700; }
 table.data tr:last-child td { border-bottom: none; }
 table.data td code { font-family: monospace; color: var(--red-dark); }
@@ -288,7 +294,7 @@ input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(
 
 .pill {
   display: inline-block; padding: 3px 10px; border-radius: 999px;
-  font-size: 0.8rem; font-weight: 700;
+  font-size: 0.8rem; font-weight: 700; white-space: nowrap;
 }
 .pill.get { background: var(--green-soft); color: var(--green); }
 .pill.ok { background: var(--green-soft); color: var(--green); }
