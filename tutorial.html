@@ -235,6 +235,26 @@
         <div id="first-out"></div>
       </div>
 
+      <div class="card" style="margin-top:16px">
+        <strong>🧪 換你改改看：網址實驗室</strong>
+        <div class="muted" style="font-size:.9rem">自己改下面的網址，按「送出」直接問九巴。改壞了也沒關係——看看它會回什麼錯。</div>
+        <div class="field" style="margin-top:12px">
+          <label for="ul-url">請求網址（可自由修改）</label>
+          <input type="text" id="ul-url" value="https://data.etabus.gov.hk/v1/transport/kmb/route/74B/outbound/1">
+        </div>
+        <div class="flex" style="margin-top:2px">
+          <button class="btn btn-primary btn-sm" id="ul-go">▶ 送出這個網址</button>
+          <span class="muted" style="font-size:.85rem">一鍵套用範例：</span>
+          <button class="btn btn-ghost btn-sm ul-sample" data-url="https://data.etabus.gov.hk/v1/transport/kmb/route/">全部路線</button>
+          <button class="btn btn-ghost btn-sm ul-sample" data-url="https://data.etabus.gov.hk/v1/transport/kmb/route/1A/outbound/1">指定路線</button>
+          <button class="btn btn-ghost btn-sm ul-sample" data-url="https://data.etabus.gov.hk/v1/transport/kmb/route/74B/sideways/1">改錯方向 → 422</button>
+          <button class="btn btn-ghost btn-sm ul-sample" data-url="https://data.etabus.gov.hk/v1/transport/kmb/rout/">路徑打錯 → 附錄</button>
+        </div>
+        <div class="status-line" id="ul-status"></div>
+        <div id="ul-out"></div>
+        <p class="muted" style="font-size:.85rem; margin-top:6px">小提示：只有 <code class="inline">data.etabus.gov.hk</code> 這個網域是九巴開放的；把網址改成別的網站，常會被瀏覽器的 CORS 安全機制擋下（連線失敗）。</p>
+      </div>
+
       <div class="tip">
         <strong>你剛剛做了什麼？</strong>
         你的瀏覽器送出了一個 <b>GET 請求</b> 到九巴伺服器，伺服器回傳一大包 JSON（裡面有幾百條路線），
@@ -822,6 +842,37 @@ function proxyKMB(req, res) {
         <b>2xx</b> ＝ 成功；<b>4xx</b> ＝ 你（請求方）的問題，回頭檢查自己送的東西；<b>5xx</b> ＝ 對方（伺服器）的問題，通常只能等或重試。
       </div>
 
+      <div class="card" style="margin-top:16px">
+        <strong>🎛️ 動詞實驗室：換動詞、改資料，看伺服器怎麼回</strong>
+        <div class="muted" style="font-size:.9rem">下面是一個在瀏覽器裡跑的「假 API」（<b>不會真的送到外面</b>），用來練習 GET / POST / PUT / DELETE 與狀態碼。改壞了會看到 4xx。</div>
+        <div class="row-form" style="margin-top:12px">
+          <div class="field" style="margin-bottom:0"><label for="vl-method">HTTP 動詞</label>
+            <select id="vl-method">
+              <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
+            </select></div>
+          <div class="field" style="margin-bottom:0; grid-column: span 2"><label for="vl-path">路徑（Path）</label>
+            <select id="vl-path">
+              <option value="/api/routes">/api/routes（路線集合）</option>
+              <option value="/api/routes/74B">/api/routes/74B（已存在的路線）</option>
+              <option value="/api/routes/999">/api/routes/999（不存在的路線）</option>
+              <option value="/api/monkeys">/api/monkeys（不存在路徑）</option>
+            </select></div>
+        </div>
+        <div class="field hidden" id="vl-body-wrap" style="margin-top:12px">
+          <label for="vl-body">Request Body（JSON）</label>
+          <textarea id="vl-body" spellcheck="false">{
+  "route": "74B",
+  "dest_tc": "觀塘碼頭"
+}</textarea>
+        </div>
+        <div class="flex" style="margin-top:12px">
+          <button class="btn btn-primary btn-sm" id="vl-go">▶ 送出請求</button>
+          <button class="btn btn-ghost btn-sm" id="vl-reset">重設示範資料</button>
+        </div>
+        <div class="status-line" id="vl-status"></div>
+        <div id="vl-out"></div>
+      </div>
+
       <div class="exercise">
         <h4>✏️ 小練習</h4>
         <p>在測試台故意送一個「方向拼錯」的請求（例如 direction 打 <code class="inline">sideways</code>），你會拿到 <b>422</b>。想想：這是 4xx 還是 5xx？是誰的問題？該改自己，還是等對方？</p>
@@ -875,6 +926,22 @@ function proxyKMB(req, res) {
         金鑰、token、私鑰都不能直接寫在網頁原始碼裡（會被看光）——這正是第 10 章「自己蓋一層 API」要把祕密放在<b>伺服器</b>的原因。
       </div>
 
+      <div class="card" style="margin-top:16px">
+        <strong>🔐 認證模擬器：沒帶 token 會怎樣？</strong>
+        <div class="muted" style="font-size:.9rem">這是模擬的「需要認證」API（<b>不會真的送到外面</b>）。切換要不要帶 <code class="inline">Authorization</code> 標頭，看看結果差在哪。</div>
+        <div class="field" style="margin-top:12px">
+          <label for="al-token">Authorization 標頭值（token）</label>
+          <input type="text" id="al-token" value="Bearer demo-token-123">
+        </div>
+        <div class="flex">
+          <label class="flex" style="gap:6px"><input type="checkbox" id="al-send" style="width:auto"> 送出時帶上這個標頭</label>
+          <button class="btn btn-primary btn-sm" id="al-go">▶ 送出請求</button>
+        </div>
+        <div class="status-line" id="al-status"></div>
+        <div id="al-out"></div>
+        <p class="muted" style="font-size:.85rem; margin-top:6px">試試：把標頭值改成 <code class="inline">12345</code>（少了 <code class="inline">Bearer</code>）也會被拒，回 <b>401</b>。</p>
+      </div>
+
       <div class="exercise">
         <h4>✏️ 小練習</h4>
         <p>用 F12 → Network 打開本站任一請求，點進去看 <b>Request Headers</b>。我們送了哪些標頭？有沒有 <code class="inline">Authorization</code>？為什麼沒有？</p>
@@ -919,6 +986,40 @@ $.data        → { route: "74B", … }
 $.data.route  → "74B"
 $.data.bound  → "O"</pre>
       <p>看懂 JSON Path，就能把規格書上的欄位，對到程式裡的取值方式。</p>
+
+      <div class="card" style="margin-top:16px">
+        <strong>🔎 JSON Path 探索器：換你查查看</strong>
+        <div class="muted" style="font-size:.9rem">在下面輸入 <code class="inline">$.</code> 開頭的路徑，看它在這包 JSON 裡對到什麼。打錯欄位名稱，會提示「找不到」。</div>
+        <div class="field" style="margin-top:12px">
+          <label for="jl-json">JSON 資料（可修改，也可以按下方按鈕抓真的）</label>
+          <textarea id="jl-json" spellcheck="false">{
+  "type": "Route",
+  "version": "1.0",
+  "data": {
+    "route": "74B",
+    "bound": "O",
+    "service_type": "1",
+    "orig_tc": "九龍灣",
+    "dest_tc": "觀塘碼頭"
+  }
+}</textarea>
+        </div>
+        <div class="flex">
+          <input type="text" id="jl-path" value="$.data.route" style="max-width:220px" aria-label="JSON Path">
+          <button class="btn btn-primary btn-sm" id="jl-go">查詢此路徑</button>
+          <button class="btn btn-ghost btn-sm" id="jl-fetch">↧ 抓一筆真實 KMB 資料</button>
+        </div>
+        <div class="status-line" id="jl-status"></div>
+        <div id="jl-out"></div>
+        <div class="flex" style="margin-top:8px">
+          <span class="muted" style="font-size:.85rem">快速試試：</span>
+          <button class="btn btn-ghost btn-sm jl-sample" data-path="$.type">$.type</button>
+          <button class="btn btn-ghost btn-sm jl-sample" data-path="$.data">$.data</button>
+          <button class="btn btn-ghost btn-sm jl-sample" data-path="$.data.route">$.data.route</button>
+          <button class="btn btn-ghost btn-sm jl-sample" data-path="$.data.nope">$.data.nope（錯的）</button>
+          <button class="btn btn-ghost btn-sm jl-sample" data-path="data.route">data.route（漏了 $）</button>
+        </div>
+      </div>
 
       <div class="exercise">
         <h4>✏️ 小練習</h4>

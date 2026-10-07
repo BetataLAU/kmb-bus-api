@@ -5,7 +5,7 @@
      - HTML 導覽 → 網路優先，離線時回快取
      - 其他同源靜態檔（css/js/圖示）→ 快取優先，背景更新
    ========================================================= */
-const CACHE = 'kmb-bus-pwa-v4';
+const CACHE = 'kmb-bus-pwa-v5';
 
 const SHELL = [
   './',

@@ -18,6 +18,67 @@ function jsonBox(title, obj, raw) {
     <pre class="code">${highlightJSON(text)}</pre>`;
 }
 
+/* ---------- 實驗室共用工具 ---------- */
+
+/* 送出「任意完整網址」（不補 KMB_BASE），回傳結構與 kmbFetch 相同 */
+async function labFetch(url) {
+  const t0 = performance.now();
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    const raw = await res.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch (e) { /* 非 JSON */ }
+    return { ok: res.ok, status: res.status, url, ms: Math.round(performance.now() - t0), data, raw };
+  } catch (err) {
+    return {
+      ok: false, status: 0, url, ms: Math.round(performance.now() - t0),
+      data: null, raw: '', error: String(err && err.message ? err.message : err),
+    };
+  }
+}
+
+/* 依狀態碼給一句「這是誰的問題」 */
+function httpCulprit(status) {
+  if (status === 0) return '這不是 HTTP 錯誤，而是「連不上」——通常是網址打錯、沒有網絡，或被瀏覽器的 CORS 安全機制擋下。';
+  if (status >= 500) return '5xx：對方（伺服器）的問題，通常只能等或重試。';
+  if (status >= 400) return '4xx：你（請求方）的問題，回頭檢查自己送出的東西。';
+  if (status >= 300) return '3xx：重新導向。';
+  if (status >= 200) return '2xx：成功。';
+  return '1xx：資訊性回應。';
+}
+
+/* 解析簡易 JSON Path（支援 $.a.b 與 $.a[0].b），錯誤時回 { ok:false, error } */
+function resolveJSONPath(root, exprRaw) {
+  const expr = String(exprRaw == null ? '' : exprRaw).trim();
+  if (!expr) return { ok: false, error: '請先輸入一個 JSON Path，例如 $.data.route' };
+  if (expr[0] !== '$') return { ok: false, error: 'JSON Path 要以 $ 開頭，例如 $.data.route' };
+  if (expr === '$') return { ok: true, value: root };
+  if (expr[1] !== '.' && expr[1] !== '[') return { ok: false, error: '語法看起來怪怪的，應該是 $.a.b 或 $.a[0].b 這種寫法' };
+  const re = /\[\s*(\d+)\s*\]|\.([A-Za-z_$][\w$]*)/g;
+  re.lastIndex = 1;
+  const tokens = [];
+  let consumed = 1, m;
+  while ((m = re.exec(expr)) !== null) {
+    if (m.index !== consumed) return { ok: false, error: '語法看起來怪怪的，應該是 $.a.b 或 $.a[0].b 這種寫法' };
+    consumed = re.lastIndex;
+    tokens.push(m[1] != null ? Number(m[1]) : m[2]);
+  }
+  if (consumed !== expr.length) return { ok: false, error: '語法看起來怪怪的，應該是 $.a.b 或 $.a[0].b 這種寫法' };
+  let cur = root;
+  for (const t of tokens) {
+    if (typeof t === 'number') {
+      if (!Array.isArray(cur)) return { ok: false, error: `[${t}] 不是陣列，不能用索引` };
+      if (t >= cur.length) return { ok: false, error: `索引 [${t}] 超出範圍（這個陣列只有 ${cur.length} 筆）` };
+      cur = cur[t];
+    } else {
+      if (cur === null || typeof cur !== 'object') return { ok: false, error: `取不到「${t}」：上一層不是物件` };
+      if (!Object.prototype.hasOwnProperty.call(cur, t)) return { ok: false, error: `找不到欄位「${t}」` };
+      cur = cur[t];
+    }
+  }
+  return { ok: true, value: cur };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   /* -------- 第 4 章：第一個請求（路線清單） -------- */
   const btnFirst = document.getElementById('btn-first');
@@ -157,6 +218,188 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>路線 ${esc(d.route)}：${esc(d.orig_tc)} → ${esc(d.dest_tc)}</strong>
           服務類型 ${esc(d.service_type)}、方向 ${esc(dirName(d.bound))}
         </div>`;
+    });
+  }
+
+  /* -------- 第 4 章：網址實驗室（自由改網址、真呼叫） -------- */
+  const ulGo = document.getElementById('ul-go');
+  if (ulGo) {
+    const ulUrl = document.getElementById('ul-url');
+    const ulStatus = document.getElementById('ul-status');
+    const ulOut = document.getElementById('ul-out');
+
+    document.querySelectorAll('.ul-sample').forEach(b => b.addEventListener('click', () => {
+      ulUrl.value = b.dataset.url;
+      ulStatus.textContent = '已套用範例，按「送出這個網址」看看結果。';
+      ulOut.innerHTML = '';
+    }));
+
+    ulGo.addEventListener('click', async () => {
+      const url = ulUrl.value.trim();
+      ulOut.innerHTML = '';
+      if (!url) { ulStatus.innerHTML = '<span class="pill err">未送出</span> 請先輸入一個網址。'; return; }
+      if (!/^https?:\/\//i.test(url)) {
+        ulStatus.innerHTML = '<span class="pill err">未送出</span> 網址要以 <code>https://</code> 開頭。';
+        return;
+      }
+      ulStatus.innerHTML = `<span class="spinner"></span> 送出中…`;
+      const r = await labFetch(url);
+      ulStatus.innerHTML = `${statusPill(r)}　${esc(r.url)}　花 ${r.ms} ms`;
+      if (r.status === 0) {
+        ulOut.innerHTML = `<div class="warn"><strong>連線失敗</strong>${esc(r.error || '')}<br>${httpCulprit(0)}</div>`;
+        return;
+      }
+      ulOut.innerHTML = `<div class="${r.ok ? 'tip' : 'warn'}">${httpCulprit(r.status)}</div>` + jsonBox('伺服器回應', r.data, r.raw);
+    });
+  }
+
+  /* -------- 第 12 章：動詞實驗室（前端模擬 API） -------- */
+  const vlGo = document.getElementById('vl-go');
+  if (vlGo) {
+    const vlMethod = document.getElementById('vl-method');
+    const vlPath = document.getElementById('vl-path');
+    const vlBodyWrap = document.getElementById('vl-body-wrap');
+    const vlBody = document.getElementById('vl-body');
+    const vlStatus = document.getElementById('vl-status');
+    const vlOut = document.getElementById('vl-out');
+    const seed = () => ([{ route: '74B', dest_tc: '觀塘碼頭' }, { route: '1A', dest_tc: '中秀茂坪' }]);
+    let vlDB = seed();
+
+    const simPill = (s) => `<span class="pill ${s >= 200 && s < 300 ? 'ok' : (s >= 500 ? 'warn' : 'err')}">HTTP ${s}</span>`;
+
+    function simServer(method, path, rawBody) {
+      const segs = path.split('/').filter(Boolean);
+      const id = segs[2];
+      if (!(segs[0] === 'api' && segs[1] === 'routes')) {
+        return { status: 404, body: { error: 'Not Found', message: `找不到這個路徑：${path}` } };
+      }
+      if (!['GET', 'POST', 'PUT', 'DELETE'].includes(method)) {
+        return { status: 405, body: { error: 'Method Not Allowed', message: `這個資源不支援 ${method}，請改用 GET / POST / PUT / DELETE。` } };
+      }
+      if (method === 'GET') {
+        if (!id) return { status: 200, body: { type: 'RouteList', data: vlDB } };
+        const found = vlDB.find(x => x.route === id);
+        return found
+          ? { status: 200, body: { type: 'Route', data: found } }
+          : { status: 404, body: { error: 'Not Found', message: `找不到路線 ${id}` } };
+      }
+      let body = null;
+      if (method !== 'DELETE') {
+        if (!rawBody.trim()) return { status: 400, body: { error: 'Bad Request', message: '缺少 Request Body' } };
+        try { body = JSON.parse(rawBody); }
+        catch (e) { return { status: 400, body: { error: 'Bad Request', message: 'Request Body 不是合法的 JSON：' + e.message } }; }
+      }
+      if (method === 'POST') {
+        if (!body || !body.route) return { status: 422, body: { error: 'Unprocessable Entity', message: '缺少必填欄位 route' } };
+        if (vlDB.some(x => x.route === body.route)) return { status: 409, body: { error: 'Conflict', message: `路線 ${body.route} 已存在，不能重複新增` } };
+        vlDB.push({ route: body.route, dest_tc: body.dest_tc || '' });
+        return { status: 201, body: { message: '已新增路線', data: body } };
+      }
+      if (!id) return { status: 400, body: { error: 'Bad Request', message: `${method} 必須指定資源 id，例如 /api/routes/74B` } };
+      const idx = vlDB.findIndex(x => x.route === id);
+      if (idx < 0) return { status: 404, body: { error: 'Not Found', message: `找不到路線 ${id}` } };
+      if (method === 'PUT') {
+        vlDB[idx] = Object.assign({}, vlDB[idx], body);
+        return { status: 200, body: { message: '已更新路線', data: vlDB[idx] } };
+      }
+      vlDB.splice(idx, 1);
+      return { status: 200, body: { message: '已刪除路線', route: id } };
+    }
+
+    function vlToggleBody() { vlBodyWrap.classList.toggle('hidden', !['POST', 'PUT'].includes(vlMethod.value)); }
+    vlMethod.addEventListener('change', () => { vlToggleBody(); vlOut.innerHTML = ''; vlStatus.textContent = ''; });
+    document.getElementById('vl-reset').addEventListener('click', () => {
+      vlDB = seed();
+      vlStatus.innerHTML = '<span class="pill ok">已重設</span> 示範資料已還原成最初兩筆。';
+      vlOut.innerHTML = '';
+    });
+    vlGo.addEventListener('click', () => {
+      const method = vlMethod.value;
+      const path = vlPath.value;
+      const res = simServer(method, path, vlBody.value);
+      vlStatus.innerHTML = `${simPill(res.status)}　<b>${method}</b> ${esc(path)}　<span class="muted">（模擬，未連網）</span>`;
+      vlOut.innerHTML = `<div class="${res.status >= 200 && res.status < 300 ? 'tip' : 'warn'}">${httpCulprit(res.status)}</div>` + jsonBox('伺服器回應', res.body);
+    });
+    vlToggleBody();
+  }
+
+  /* -------- 第 13 章：認證模擬器 -------- */
+  const alGo = document.getElementById('al-go');
+  if (alGo) {
+    const alToken = document.getElementById('al-token');
+    const alSend = document.getElementById('al-send');
+    const alStatus = document.getElementById('al-status');
+    const alOut = document.getElementById('al-out');
+
+    alGo.addEventListener('click', () => {
+      const headers = { Accept: 'application/json' };
+      if (alSend.checked) headers.Authorization = alToken.value.trim();
+
+      let status, body;
+      if (!headers.Authorization) {
+        status = 401; body = { error: 'Unauthorized', message: '缺少 Authorization 標頭——伺服器不知道你是誰。' };
+      } else if (!/^Bearer\s+\S+/i.test(headers.Authorization)) {
+        status = 401; body = { error: 'Unauthorized', message: 'Authorization 格式不對，應該是 "Bearer <token>"。' };
+      } else {
+        status = 200; body = { type: 'Route', data: { route: '74B', dest_tc: '觀塘碼頭' } };
+      }
+
+      alStatus.innerHTML = `<span class="pill ${status === 200 ? 'ok' : 'err'}">HTTP ${status}</span>　<span class="muted">（模擬，未連網）</span>`;
+      const headerLines = Object.keys(headers).map(k => k + ': ' + headers[k]).join('\n');
+      alOut.innerHTML =
+        `<div class="code-head"><span>這次送出的標頭（Request Headers）</span></div>
+         <pre class="code">${esc(headerLines)}</pre>` +
+        `<div class="${status === 200 ? 'tip' : 'warn'}">${httpCulprit(status)}</div>` +
+        jsonBox('伺服器回應', body);
+    });
+  }
+
+  /* -------- 第 14 章：JSON Path 探索器 -------- */
+  const jlGo = document.getElementById('jl-go');
+  if (jlGo) {
+    const jlJson = document.getElementById('jl-json');
+    const jlPath = document.getElementById('jl-path');
+    const jlStatus = document.getElementById('jl-status');
+    const jlOut = document.getElementById('jl-out');
+
+    document.querySelectorAll('.jl-sample').forEach(b => b.addEventListener('click', () => {
+      jlPath.value = b.dataset.path;
+      jlOut.innerHTML = ''; jlStatus.textContent = '';
+    }));
+
+    document.getElementById('jl-fetch').addEventListener('click', async () => {
+      jlStatus.innerHTML = `<span class="spinner"></span> 正在抓 74B 的真實資料…`;
+      jlOut.innerHTML = '';
+      const r = await kmbFetch(Endpoints.route('74B', 'outbound', '1'));
+      if (!r.ok || !r.data || !r.data.data) {
+        jlStatus.innerHTML = `${statusPill(r)} 目前抓不到資料，請稍後再試（或改看上面的範例 JSON）。`;
+        return;
+      }
+      jlJson.value = pretty(r.data);
+      jlStatus.innerHTML = `${statusPill(r)} 已把真實回應放進上面的框框，試著查 <code>$.data.route</code>。`;
+    });
+
+    jlGo.addEventListener('click', () => {
+      let obj;
+      try { obj = JSON.parse(jlJson.value); }
+      catch (e) {
+        jlStatus.innerHTML = '<span class="pill err">JSON 有錯</span>';
+        jlOut.innerHTML = `<div class="warn"><strong>上面的 JSON 格式不正確</strong>${esc(e.message)}<br>JSON 很嚴格：少了逗號、用了單引號、多了逗號都會被拒絕。</div>`;
+        return;
+      }
+      const res = resolveJSONPath(obj, jlPath.value);
+      if (!res.ok) {
+        jlStatus.innerHTML = `<span class="pill err">找不到</span> <code>${esc(jlPath.value)}</code>`;
+        jlOut.innerHTML = `<div class="warn"><strong>查不到這個路徑</strong>${esc(res.error)}</div>`;
+        return;
+      }
+      jlStatus.innerHTML = `<span class="pill ok">找到了</span> <code>${esc(jlPath.value)}</code>`;
+      const v = res.value;
+      if (v !== null && typeof v === 'object') {
+        jlOut.innerHTML = jsonBox('對到的內容', v);
+      } else {
+        jlOut.innerHTML = `<div class="note"><strong>對到的值</strong><code class="inline">${esc(JSON.stringify(v))}</code> <span class="muted">（型別：${typeof v}）</span></div>`;
+      }
     });
   }
 

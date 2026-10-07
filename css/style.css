@@ -291,6 +291,16 @@ input[type=text], input[type=search], select {
 }
 input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
 
+textarea {
+  width: 100%; padding: 11px 13px; border: 1px solid var(--line);
+  border-radius: 10px; font-size: 0.92rem;
+  font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+  background: #fff; color: var(--ink); resize: vertical; min-height: 110px;
+  line-height: 1.5;
+}
+textarea:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+label.flex { font-weight: 600; }
+
 .row-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 @media (max-width: 760px) { .row-form { grid-template-columns: 1fr; } }
 
