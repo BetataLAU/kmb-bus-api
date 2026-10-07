@@ -1,0 +1,19 @@
+{
+  "name": "KMB Bus API 學習站",
+  "short_name": "KMB Bus",
+  "description": "由零開始學會呼叫 API，並用九巴／龍運實時到站資料做實戰。",
+  "lang": "zh-Hant-HK",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#d81e06",
+  "categories": ["education", "travel", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

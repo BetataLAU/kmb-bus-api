@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教學 — KMB Bus API 學習站</title>
+<!-- PWA（加到主畫面 / 可離線）-->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d81e06">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KMB Bus">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="tutorial.html">
+
+<div class="layout">
+  <!-- 側邊目錄 -->
+  <aside class="toc">
+    <h4>課程目錄</h4>
+    <a href="#ch1">1. 什麼是 API？</a>
+    <a href="#ch2">2. 認識 HTTP 請求</a>
+    <a href="#ch3">3. 什麼是 JSON？</a>
+    <a href="#ch4">4. 你的第一個請求</a>
+    <a href="#ch5">5. 路徑與參數</a>
+    <a href="#ch6">6. 狀態碼與錯誤</a>
+    <a href="#ch7">7. 用 JS 呼叫 API</a>
+    <a href="#ch8">8. 組合實戰</a>
+    <a href="#ch9">9. 打造自己的 API</a>
+  </aside>
+
+  <article class="article">
+
+    <!-- ============ 第 1 章 ============ -->
+    <section class="chapter" id="ch1">
+      <div class="kicker">第 1 章</div>
+      <h2>什麼是 API？</h2>
+      <p class="lead-q">先別管技術名詞。用一句話說：<strong>API 就是「讓兩個程式互相對話」的規則。</strong></p>
+
+      <h3>用「餐廳」來理解</h3>
+      <p>想像你去一間餐廳：</p>
+      <ul class="clean">
+        <li><b>你（客人）</b>：想吃到東西的人。</li>
+        <li><b>廚房（伺服器 Server）</b>：真正把菜做出來的地方，裡面很複雜，你不能直接進去。</li>
+        <li><b>侍應／菜單（API）</b>：你跟廚房之間唯一的溝通管道。你照著「菜單」點餐，侍應把餐送到你面前。</li>
+      </ul>
+      <p>
+        在網站世界裡：<b>你的網頁（客人）</b>不能直接讀取九巴的資料庫（廚房），
+        於是九巴提供了一份「菜單」——也就是 <b>API</b>。你照著菜單（規定的網址）點餐（送出請求），
+        九巴的伺服器就把你要的資料送回來（回應）。
+      </p>
+
+      <div class="note">
+        <strong>API 全名</strong>
+        Application Programming Interface，中文常譯「應用程式介面」。
+        你可以把它想成一張「你可以問什麼問題、要用什麼格式問、會拿回什麼」的規則表。
+      </div>
+
+      <h3>一次 API 呼叫長怎樣？</h3>
+      <p>用文字畫出來，整個流程只有四個角色與兩趟來回：</p>
+      <div class="code-head"><span>流程</span></div>
+      <pre class="code">你的網頁  ──①  請求(Request)  ──▶  九巴伺服器
+           (我要 74B 路線的資料)
+
+你的網頁  ◀──②  回應(Response) ──   九巴伺服器
+           (這是 74B 的資料，用 JSON 表示)</pre>
+
+      <p>就這麼簡單。你只要負責「① 問對問題」，剩下交給伺服器。</p>
+
+      <h3>為什麼要用 API，而不是自己存資料？</h3>
+      <ul class="clean">
+        <li><b>資料是活的</b>：巴士到站時間每秒都在變，你不可能自己維護。API 讓你每次都拿到最新資料。</li>
+        <li><b>不用懂內部</b>：你不用知道九巴用什麼資料庫、程式語言，只要照規矩問就好。</li>
+        <li><b>安全</b>：資料擁有者可以決定你能問什麼、不能問什麼。</li>
+      </ul>
+
+      <div class="tip">
+        <strong>我們的實戰對象</strong>
+        就是九巴（KMB）與龍運（LWB）提供的公開 API：<code class="inline">https://data.etabus.gov.hk</code>。
+        它可以查路線、站點、以及最重要的——<b>實時到站時間</b>。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>打開你的手機，想三個 App（例如天氣、地圖、叫車）。猜猜看，它們背後是不是也在「呼叫某個 API」拿到即時資料？為什麼？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 2 章 ============ -->
+    <section class="chapter" id="ch2">
+      <div class="kicker">第 2 章</div>
+      <h2>認識 HTTP 請求</h2>
+      <p class="lead-q">每個 API「請求」其實就是一句話：<strong>用什麼方法（Method），去哪裡（URL）拿東西。</strong></p>
+
+      <h3>① 方法（HTTP Method）</h3>
+      <p>最常用的四種動詞，對應「資料的四種動作」：</p>
+      <table class="data">
+        <tr><th>方法</th><th>意思</th><th>比喻</th></tr>
+        <tr><td><code>GET</code></td><td>讀取資料</td><td>看菜單、點一份餐</td></tr>
+        <tr><td><code>POST</code></td><td>新增資料</td><td>填單新加入會員</td></tr>
+        <tr><td><code>PUT</code> / <code>PATCH</code></td><td>更新資料</td><td>修改你的會員資料</td></tr>
+        <tr><td><code>DELETE</code></td><td>刪除資料</td><td>取消訂閱</td></tr>
+      </table>
+      <p>👍 好消息：KMB 的 API <b>全部都是 <code class="inline">GET</code></b>（我們只讀取資料，不修改），所以只要先學 GET 就夠了！</p>
+
+      <h3>② 網址（URL）拆解</h3>
+      <p>把一個完整的 API 網址拆開看，其實一目了然：</p>
+      <div class="urlline">
+        <span class="m">GET</span> https://data.etabus.gov.hk<span class="p">/v1/transport/kmb/route/74B/outbound/1</span>
+      </div>
+      <table class="data">
+        <tr><th>部分</th><th>內容</th><th>說明</th></tr>
+        <tr><td>協定</td><td><code>https://</code></td><td>加密的傳輸方式（s = secure）</td></tr>
+        <tr><td>主機 / Base URL</td><td><code>data.etabus.gov.hk</code></td><td>伺服器的地址</td></tr>
+        <tr><td>路徑 Path</td><td><code>/v1/transport/kmb/route/74B/outbound/1</code></td><td>你要問哪一項資料</td></tr>
+      </table>
+
+      <h3>③ 兩種「參數」</h3>
+      <p>參數就是你告訴伺服器「我要的是哪一筆」的細節。有兩種寫法：</p>
+      <table class="data">
+        <tr><th>種類</th><th>長相</th><th>KMB 例子</th></tr>
+        <tr><td><b>路徑參數</b><br>Path Parameter</td><td>直接嵌在網址路徑裡，用 <code>/</code> 分隔</td><td><code>/route/<b>74B</b>/<b>outbound</b>/<b>1</b></code></td></tr>
+        <tr><td><b>查詢參數</b><br>Query Parameter</td><td>放在 <code>?</code> 後面，<code>key=value</code>，多個用 <code>&amp;</code></td><td>KMB 目前不需要查詢參數</td></tr>
+      </table>
+
+      <div class="warn">
+        <strong>⚠️ 大小寫敏感</strong>
+        官方規格特別註明：網址與參數是<b>大小寫敏感</b>的。
+        <code class="inline">route/74b/outbound/1</code>（小寫 b）和 <code class="inline">route/74B/outbound/1</code> 是不一樣的！方向一定要用 <code class="inline">outbound</code> 或 <code class="inline">inbound</code>（全小寫）。
+      </div>
+
+      <h3>④ 標頭（Headers）</h3>
+      <p>標頭是「附在請求上的補充說明」，像是告訴對方「我接受 JSON 格式」。最常見的一個：</p>
+      <pre class="code">Accept: application/json</pre>
+      <p>不過 KMB 的 API 很寬容，不加標頭也能正常運作，新手可以先忽略。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>把這個網址拆成「方法、主機、路徑、路徑參數」四部分：</p>
+        <pre class="code">GET https://data.etabus.gov.hk/v1/transport/kmb/route-stop/1A/outbound/1</pre>
+        <p class="muted">提示：路徑參數共有三個（route、direction、service_type）。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 3 章 ============ -->
+    <section class="chapter" id="ch3">
+      <div class="kicker">第 3 章</div>
+      <h2>什麼是 JSON？</h2>
+      <p class="lead-q">伺服器回應給你的資料，幾乎都用 <strong>JSON</strong> 這個格式。它只是一種「有結構的文字」。</p>
+
+      <h3>JSON 的三個基本元素</h3>
+      <ul class="clean">
+        <li><b>物件 Object</b>：用大括號 <code class="inline">{ }</code>，裡面是「名稱: 值」的組合，像一張表單。</li>
+        <li><b>陣列 Array</b>：用中括號 <code class="inline">[ ]</code>，裡面是一串有順序的東西（可以放很多筆）。</li>
+        <li><b>值 Value</b>：可以是文字（要用雙引號 <code class="inline">" "</code>）、數字、<code>true</code>/<code>false</code>、<code>null</code>（空）。</li>
+      </ul>
+
+      <h3>看真實的 KMB 回應</h3>
+      <p>下面是把 <code class="inline">/v1/transport/kmb/route/74B/outbound/1</code> 的回應（真實資料）拆解後長相：</p>
+      <div class="code-head"><span>回應 JSON（真實範例）</span></div>
+      <pre class="code">{
+  <span class="key">"type"</span>: <span class="str">"Route"</span>,
+  <span class="key">"version"</span>: <span class="str">"1.0"</span>,
+  <span class="key">"generated_timestamp"</span>: <span class="str">"2024-11-29T11:40:48+08:00"</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"route"</span>: <span class="str">"74B"</span>,
+    <span class="key">"bound"</span>: <span class="str">"O"</span>,
+    <span class="key">"service_type"</span>: <span class="str">"1"</span>,
+    <span class="key">"orig_tc"</span>: <span class="str">"九龍灣"</span>,
+    <span class="key">"dest_tc"</span>: <span class="str">"大埔中心"</span>,
+    <span class="key">"data_timestamp"</span>: <span class="str">"2024-11-29T11:40:00+08:00"</span>
+  }
+}</pre>
+
+      <h3>這些欄位是什麼意思？</h3>
+      <table class="data">
+        <tr><th>欄位</th><th>意義</th></tr>
+        <tr><td><code>type</code></td><td>這是哪一種資料（Route / RouteList / Stop / ETA …）。</td></tr>
+        <tr><td><code>version</code></td><td>資料格式版本。</td></tr>
+        <tr><td><code>generated_timestamp</code></td><td>這份回應在伺服器產生（並快取）的時間。</td></tr>
+        <tr><td><code>data</code></td><td><b>你真正要的資料</b>，可能是一個物件，或一個陣列（多筆）。</td></tr>
+      </table>
+
+      <div class="note">
+        <strong>怎麼「讀」JSON？</strong>
+        想像它是「盒中盒」。最外層是一個盒子，裡面有一個叫 <code class="inline">data</code> 的盒子；
+        要拿路線號碼，就是打開 <code class="inline">data</code> 再找 <code class="inline">route</code>。
+        用 JS 寫就是：<code class="inline">result.data.route</code> → <code class="inline">"74B"</code>。
+      </div>
+
+      <h3>清單資料：data 是陣列</h3>
+      <p>當你要的是「很多筆」時，<code class="inline">data</code> 會是一個用 <code class="inline">[ ]</code> 包起來的陣列。例如路線清單：</p>
+      <div class="code-head"><span>回應 JSON（data 是陣列）</span></div>
+      <pre class="code">{
+  <span class="key">"type"</span>: <span class="str">"RouteList"</span>,
+  <span class="key">"data"</span>: [
+    { <span class="key">"route"</span>: <span class="str">"1"</span>, <span class="key">"bound"</span>: <span class="str">"O"</span>, <span class="key">"dest_tc"</span>: <span class="str">"尖沙咀碼頭"</span> },
+    { <span class="key">"route"</span>: <span class="str">"1"</span>, <span class="key">"bound"</span>: <span class="str">"I"</span>, <span class="key">"dest_tc"</span>: <span class="str">"竹園邨"</span> },
+    <span class="cmt">// ... 還有幾百筆</span>
+  ]
+}</pre>
+      <p>要拿第一筆的路線：<code class="inline">result.data[0].route</code>（注意 <code class="inline">[0]</code> 是「第 0 筆」，也就是第一筆）。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>在上面第一個 JSON 裡，用眼睛找出：這條路線的「目的地（中文）」和「方向」。它們的欄位名稱分別是什麼？值是什麼？</p>
+        <p class="muted">答案：<code class="inline">dest_tc</code> = "大埔中心"、<code class="inline">bound</code> = "O"（去程）。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 4 章 ============ -->
+    <section class="chapter" id="ch4">
+      <div class="kicker">第 4 章</div>
+      <h2>你的第一個請求（動手做）</h2>
+      <p class="lead-q">觀念講完了，現在按一顆按鈕，<strong>親手跟九巴的伺服器要資料</strong>。</p>
+
+      <div class="card">
+        <div class="spread">
+          <div>
+            <strong>實作：取得全部路線清單</strong>
+            <div class="muted" style="font-size:.9rem">GET https://data.etabus.gov.hk/v1/transport/kmb/route/</div>
+          </div>
+          <button class="btn btn-primary" id="btn-first">▶ 送出請求</button>
+        </div>
+        <div class="status-line" id="first-status"></div>
+        <div id="first-out"></div>
+      </div>
+
+      <div class="tip">
+        <strong>你剛剛做了什麼？</strong>
+        你的瀏覽器送出了一個 <b>GET 請求</b> 到九巴伺服器，伺服器回傳一大包 JSON（裡面有幾百條路線），
+        你的網頁把它讀進來並顯示。這就是一次完整的 API 呼叫！
+      </div>
+
+      <h3>用程式碼做同一件事</h3>
+      <p>底下是「按鈕背後」真正跑的程式碼。別擔心看不懂，我們下一章會逐行解釋：</p>
+      <div class="code-head"><span>JavaScript（瀏覽器內建，免安裝）</span>
+        <button class="copy-btn" data-copy="code-first" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-first">// 1. 用 fetch 送出請求，「await」表示等它回來
+const res = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route/');
+
+// 2. 把回應的內容解析成 JSON（變成 JS 可以讀的物件）
+const result = await res.json();
+
+// 3. 從 data 陣列裡拿資料
+console.log('共 ' + result.data.length + ' 筆路線');
+console.log('第一條：' + result.data[0].route + ' 往 ' + result.data[0].dest_tc);</pre>
+
+      <h3>拆解這三步</h3>
+      <table class="data">
+        <tr><th>步驟</th><th>程式碼</th><th>白話解釋</th></tr>
+        <tr><td>① 請求</td><td><code>fetch(網址)</code></td><td>跟伺服器點餐。</td></tr>
+        <tr><td>② 解析</td><td><code>await res.json()</code></td><td>把回傳的「文字」變成可讀的物件。</td></tr>
+        <tr><td>③ 使用</td><td><code>result.data[...]</code></td><td>打開盒子拿你要的資料。</td></tr>
+      </table>
+      <p><code class="inline">await</code> 的意思是「等一下」——因為資料要從網路另一端傳回來，需要一點時間。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>按上面的按鈕後，看看結果列表。請問：編號 <b>64K</b> 這條路線的目的地（中文）是什麼？</p>
+        <p class="muted">提示：在結果裡找 route 等於 "64K" 的那筆，看 dest_tc。也可以到 <a href="playground.html">測試台</a> 自己查。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 5 章 ============ -->
+    <section class="chapter" id="ch5">
+      <div class="kicker">第 5 章</div>
+      <h2>路徑與參數：查到「我想查的那一條」</h2>
+      <p class="lead-q">清單 API 會回傳「全部」，但我們通常只想要「某一條路線」。這時就要在網址裡放入<strong>路徑參數</strong>。</p>
+
+      <h3>從清單到單筆</h3>
+      <p>比較兩個端點：</p>
+      <table class="data">
+        <tr><th>端點</th><th>會拿到</th></tr>
+        <tr><td><code>/route/</code></td><td>全部路線（幾百筆）</td></tr>
+        <tr><td><code>/route/{route}/{direction}/{service_type}</code></td><td>只拿「指定」的那一條</td></tr>
+      </table>
+      <p>大括號 <code class="inline">{ }</code> 是「變數」，例如把 <code class="inline">{route}</code> 換成 <code class="inline">74B</code>、<code class="inline">{direction}</code> 換成 <code class="inline">outbound</code>、<code class="inline">{service_type}</code> 換成 <code class="inline">1</code>，就變成：</p>
+      <div class="urlline"><span class="m">GET</span> https://data.etabus.gov.hk<span class="p">/v1/transport/kmb/route/74B/outbound/1</span></div>
+
+      <h3>direction 與 service_type 是什麼？</h3>
+      <ul class="clean">
+        <li><b>direction（方向）</b>：網址裡寫 <code class="inline">outbound</code>（去程，往目的地）或 <code class="inline">inbound</code>（回程，往起點）。<br>
+          但回傳資料裡會用 <code class="inline">bound</code> 欄位，值是 <code class="inline">O</code>（去程）或 <code class="inline">I</code>（回程）。</li>
+        <li><b>service_type（服務類型）</b>：常見為 <code class="inline">1</code>（普通班次）或 <code class="inline">2</code>（特別班次，例如只開部分路段或特定時段）。</li>
+      </ul>
+
+      <div class="card">
+        <div class="spread">
+          <strong>實作：查指定路線資料</strong>
+          <button class="btn btn-primary btn-sm" id="ch5-go">▶ 查詢</button>
+        </div>
+        <div class="row-form" style="margin-top:12px">
+          <div class="field"><label>route（路線號）</label>
+            <input type="text" id="ch5-route" value="74B"></div>
+          <div class="field"><label>direction（方向）</label>
+            <select id="ch5-dir"><option value="outbound">outbound（去程）</option><option value="inbound">inbound（回程）</option></select></div>
+          <div class="field"><label>service_type</label>
+            <select id="ch5-st"><option value="1">1</option><option value="2">2</option></select></div>
+        </div>
+        <div class="status-line" id="ch5-status"></div>
+        <div id="ch5-out"></div>
+      </div>
+
+      <h3>再進一步：查路線經過哪些站</h3>
+      <p>有了路線，我們還想知道它「沿途停哪幾站」，就要用 <b>Route-Stop API</b>：</p>
+      <div class="urlline"><span class="m">GET</span> https://data.etabus.gov.hk<span class="p">/v1/transport/kmb/route-stop/{route}/{direction}/{service_type}</span></div>
+      <p>它回傳的是「站點 ID 序列」（每站一個 <code class="inline">seq</code> 序號 + 一個 <code class="inline">stop</code> 站點 ID），像這樣：</p>
+      <div class="code-head"><span>Route-Stop 回應節錄</span></div>
+      <pre class="code">{
+  <span class="key">"type"</span>: <span class="str">"RouteStop"</span>,
+  <span class="key">"data"</span>: [
+    { <span class="key">"route"</span>: <span class="str">"1A"</span>, <span class="key">"bound"</span>: <span class="str">"O"</span>, <span class="key">"seq"</span>: <span class="num">1</span>, <span class="key">"stop"</span>: <span class="str">"A3ADFCDF8487ADB9"</span> },
+    { <span class="key">"route"</span>: <span class="str">"1A"</span>, <span class="key">"bound"</span>: <span class="str">"O"</span>, <span class="key">"seq"</span>: <span class="num">2</span>, <span class="key">"stop"</span>: <span class="str">"6F106FD26B684372"</span> },
+    <span class="cmt">// ...</span>
+  ]
+}</pre>
+      <p class="muted">那個 <code class="inline">stop</code> 是「站點 ID」（16 個字元的代碼），要再查「站點 API」才知道它的中文名。這種「先拿 ID、再拿細節」是 API 很常見的用法。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>用上面的小工具，把 route 改成 <code class="inline">1A</code>、direction 選 <code class="inline">outbound</code>、service_type 選 <code class="inline">1</code>，按查詢。它的起點與終點（中文）分別是什麼？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 6 章 ============ -->
+    <section class="chapter" id="ch6">
+      <div class="kicker">第 6 章</div>
+      <h2>狀態碼與錯誤處理</h2>
+      <p class="lead-q">伺服器每次回覆都會附上一個 <strong>HTTP 狀態碼</strong>（Status Code），用一個數字告訴你「這次請求的結果如何」。</p>
+
+      <h3>三大類狀態碼</h3>
+      <table class="data">
+        <tr><th>範圍</th><th>意思</th><th>你該做什麼</th></tr>
+        <tr><td><code>2xx</code></td><td>✅ 成功</td><td>開心地把資料拿來用</td></tr>
+        <tr><td><code>4xx</code></td><td>🙋 你的請求有問題</td><td>檢查你送的參數對不對</td></tr>
+        <tr><td><code>5xx</code></td><td>🔧 伺服器自己出錯</td><td>不是你的錯，稍後再試</td></tr>
+      </table>
+
+      <h3>KMB API 會出現的三種碼</h3>
+      <table class="data">
+        <tr><th>狀態碼</th><th>意思</th></tr>
+        <tr><td><code>200</code></td><td>成功，資料在回應內容裡。</td></tr>
+        <tr><td><code>422</code></td><td>參數錯誤或缺少（Invalid/Missing parameter(s)）。</td></tr>
+        <tr><td><code>500</code></td><td>伺服器內部錯誤。</td></tr>
+      </table>
+
+      <div class="note">
+        <strong>出錯時的回應格式</strong>
+        當狀態碼不是 200，回應內容會像這樣，用 <code class="inline">code</code> 和 <code class="inline">message</code> 告訴你原因：
+        <pre class="code">{ <span class="key">"code"</span>: <span class="str">"422"</span>, <span class="key">"message"</span>: <span class="str">" Invalid/Missing parameter(s)"</span> }</pre>
+      </div>
+
+      <div class="card">
+        <div class="spread">
+          <div>
+            <strong>實作：送一個「參數不合法」的請求</strong>
+            <div class="muted" style="font-size:.9rem">方向故意拼成 sideways（合法值只有 outbound / inbound）。</div>
+          </div>
+          <button class="btn btn-primary" id="ch6-422">▶ 送出錯誤方向</button>
+        </div>
+        <div class="spread" style="margin-top:12px">
+          <div>
+            <strong>實作：送一個「查無資料」但合法的請求</strong>
+            <div class="muted" style="font-size:.9rem">路線號 999XYZ 不存在，但格式合法。</div>
+          </div>
+          <button class="btn btn-ghost" id="ch6-empty">▶ 送出不存在路線</button>
+        </div>
+        <div class="status-line" id="ch6-status"></div>
+        <div id="ch6-out"></div>
+      </div>
+
+      <div class="warn">
+        <strong>⚠️ 非常重要的一課</strong>
+        KMB 的 API 對這兩種「得不到資料」的情況，回應方式<b>完全不同</b>：
+        <ul class="clean" style="margin:8px 0 0">
+          <li><b>參數格式不合法</b>（拼錯方向、缺少參數）→ 回 <span class="pill err">422</span>，附錯誤訊息。</li>
+          <li><b>參數合法但查無資料</b>（路線不存在）→ 回 <span class="pill ok">200</span>，但 <code class="inline">data</code> 是<b>空的</b>（<code class="inline">{}</code> 或 <code class="inline">[]</code>）。</li>
+        </ul>
+        所以你不能只檢查「狀態碼是不是 200」，還要檢查 <b>data 是不是空的</b>！這就是第 7 章會教你的寫法。
+      </div>
+
+
+      <h3>正確的錯誤處理寫法</h3>
+      <p>真實世界的程式一定要「防呆」。用 <code class="inline">try / catch</code> 包住網路請求，並檢查 <code class="inline">res.ok</code>：</p>
+      <div class="code-head"><span>JavaScript：會處理錯誤的版本</span>
+        <button class="copy-btn" data-copy="code-err" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-err">async function getRoute(route, dir, st) {
+  try {
+    const url = `https://data.etabus.gov.hk/v1/transport/kmb/route/${route}/${dir}/${st}`;
+    const res = await fetch(url);
+
+    // ① 狀態碼不是 200~299 → 當成錯誤
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(`API 回報錯誤 ${res.status}：${err.message}`);
+    }
+
+    const result = await res.json();
+
+    // ② 就算是 200，也要檢查資料是不是空的！
+    if (!result.data || Object.keys(result.data).length === 0) {
+      throw new Error('查無此路線');
+    }
+
+    return result.data;          // 通過檢查：回傳資料
+  } catch (e) {
+    console.error('查詢失敗：', e.message);
+    return null;                 // 失敗：回傳 null，讓呼叫端知道
+  }
+}</pre>
+
+      <div class="tip">
+        <strong>為什麼一定要處理錯誤？</strong>
+        網路會斷、路線可能打錯、伺服器偶爾會忙。如果沒有 <code class="inline">try/catch</code>，
+        程式一遇到錯誤就會整個停住，使用者只看到「壞掉了」。好的程式會告訴使用者「發生什麼事」。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>依序按上面兩個按鈕，比較它們的<b>狀態碼</b>與<b>回應內容</b>有什麼不同。想一想：如果你的程式只檢查「狀態碼是不是 200」，遇到「查無資料」時會發生什麼問題？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 7 章 ============ -->
+    <section class="chapter" id="ch7">
+      <div class="kicker">第 7 章</div>
+      <h2>用 JavaScript 寫程式呼叫 API</h2>
+      <p class="lead-q">前面都是按鈕幫你按。這一章，我們看清楚「一個會呼叫 API 的網頁」是怎麼寫出來的。</p>
+
+      <h3>先記住一個模板</h3>
+      <p>瀏覽器內建了一個函式叫 <code class="inline">fetch()</code>，它就是「送出請求」的工具。標準寫法（放在 <code class="inline">&lt;script&gt;</code> 裡）：</p>
+      <div class="code-head"><span>最基本模板</span>
+        <button class="copy-btn" data-copy="code-tpl" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-tpl">async function 取得資料() {
+  const res    = await fetch('API 的網址');   // ① 送出請求
+  const result = await res.json();            // ② 解析 JSON
+  console.log(result.data);                   // ③ 使用資料
+}
+取得資料();</pre>
+      <p>三個關鍵字：<code class="inline">async</code>（宣告這是「非同步」函式）、<code class="inline">await</code>（等結果回來）、<code class="inline">fetch</code>（送請求）。</p>
+
+      <h3>完整範例：輸入路線 → 顯示目的地</h3>
+      <p>下面是一個可以直接用的完整小程式，把 API 資料放進 HTML 畫面：</p>
+      <div class="code-head"><span>完整可執行範例</span>
+        <button class="copy-btn" data-copy="code-full" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-full">&lt;!-- HTML --&gt;
+&lt;input id="route" value="74B" placeholder="輸入路線號"&gt;
+&lt;button onclick="查路線()"&gt;查詢&lt;/button&gt;
+&lt;p id="result"&gt;&lt;/p&gt;
+
+&lt;script&gt;
+async function 查路線() {
+  const route = document.getElementById('route').value;
+  const 顯示 = document.getElementById('result');
+  顯示.textContent = '查詢中…';
+
+  // 組合網址（direction 固定用 outbound、service_type 固定用 1）
+  const url = 'https://data.etabus.gov.hk/v1/transport/kmb/route/'
+            + route + '/outbound/1';
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('查不到這條路線（狀態碼 ' + res.status + '）');
+
+    const result = await res.json();
+
+    // 200 不代表有資料！空物件也要當成「查不到」
+    if (!result.data || Object.keys(result.data).length === 0) {
+      throw new Error('查無路線 ' + route);
+    }
+
+    const d = result.data;
+    顯示.textContent = `路線 ${d.route}：${d.orig_tc} → ${d.dest_tc}`;
+  } catch (e) {
+    顯示.textContent = '錯誤：' + e.message;
+  }
+}
+&lt;/script&gt;</pre>
+
+      <h3>自己試一次</h3>
+      <div class="card">
+        <div class="spread">
+          <strong>實作：輸入路線，看目的地</strong>
+          <div class="flex">
+            <input type="text" id="ch7-route" value="74B" style="width:120px">
+            <button class="btn btn-primary btn-sm" id="ch7-go">▶ 查詢</button>
+          </div>
+        </div>
+        <div class="status-line" id="ch7-status"></div>
+        <div id="ch7-out"></div>
+      </div>
+
+      <div class="tip">
+        <strong>看得出來嗎？</strong>
+        上面這個小工具，其實就是用第 7 章的程式碼做的。你已經有能力寫出它了！
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>把範例程式碼複製到一個 <code class="inline">.html</code> 檔、用瀏覽器打開，改成查 <code class="inline">1A</code>、<code class="inline">40</code>、<code class="inline">234X</code>。試著把 <code class="inline">orig_tc</code>（起點）也顯示出來。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 8 章 ============ -->
+    <section class="chapter" id="ch8">
+      <div class="kicker">第 8 章</div>
+      <h2>組合實戰：做一個「實時到站」App</h2>
+      <p class="lead-q">把前面所有東西串起來，做出一個真的能用的頁面：<strong>輸入路線 → 看站點 → 看即時到站時間</strong>。</p>
+
+      <h3>需要的資料，一層一層拿</h3>
+      <p>到站 App 不是「一個 API 就搞定」，而是把幾個 API 串起來。順序很重要：</p>
+      <table class="data">
+        <tr><th>步驟</th><th>用哪個 API</th><th>拿到什麼</th></tr>
+        <tr><td>① 選路線</td><td><code>/route/</code> 或使用者輸入</td><td>路線號、方向、起點終點</td></tr>
+        <tr><td>② 查沿途站點</td><td><code>/route-stop/{route}/{dir}/{st}</code></td><td>一串 <code>stop</code> ID 與 <code>seq</code></td></tr>
+        <tr><td>③ 站點 ID → 站名</td><td><code>/stop/{stop_id}</code>（或 <code>/stop</code> 清單）</td><td>站名（中文）與經緯度</td></tr>
+        <tr><td>④ 查即時到站</td><td><code>/stop-eta/{stop_id}</code></td><td>該站所有路線的 ETA</td></tr>
+        <tr><td>⑤ 每 30 秒重抓</td><td>重複 ④</td><td>更新的到站時間</td></tr>
+      </table>
+
+      <h3>ETA 資料長什麼樣？</h3>
+      <div class="code-head"><span>/stop-eta 回應的其中一筆</span></div>
+      <pre class="code">{
+  <span class="key">"route"</span>: <span class="str">"40"</span>,
+  <span class="key">"dir"</span>: <span class="str">"O"</span>,
+  <span class="key">"service_type"</span>: <span class="num">1</span>,
+  <span class="key">"seq"</span>: <span class="num">3</span>,                          <span class="cmt">// 這是路線的第幾站</span>
+  <span class="key">"dest_tc"</span>: <span class="str">"麗港城"</span>,                 <span class="cmt">// 目的地</span>
+  <span class="key">"eta_seq"</span>: <span class="num">1</span>,                       <span class="cmt">// 這是「第幾班」的預估</span>
+  <span class="key">"eta"</span>: <span class="str">"2024-11-29T17:25:51+08:00"</span>,   <span class="cmt">// 預計到站時間（可能係 null = 暫無）</span>
+  <span class="key">"rmk_tc"</span>: <span class="str">"原定班次"</span>,                <span class="cmt">// 備註</span>
+  <span class="key">"data_timestamp"</span>: <span class="str">"2024-11-29T17:22:15+08:00"</span>
+}</pre>
+      <table class="data">
+        <tr><th>欄位</th><th>意義</th></tr>
+        <tr><td><code>eta</code></td><td>預計到站時間，ISO 8601 格式。若為 <code>null</code> 表示暫時沒有資料（例如尚未發車）。</td></tr>
+        <tr><td><code>eta_seq</code></td><td>同一路線的第幾班（1 = 最近那班）。</td></tr>
+        <tr><td><code>rmk_tc</code></td><td>備註，例如「原定班次」、「最後班次」。</td></tr>
+        <tr><td><code>seq</code></td><td>你查的這個站在該路線的第幾站。</td></tr>
+      </table>
+
+      <h3>關鍵程式碼骨架</h3>
+      <p>把上面的步驟翻成程式，就是這樣（真實的 App 就在 <a href="bus-app.html">巴士 App 頁</a>）：</p>
+      <div class="code-head"><span>到站 App 的核心邏輯</span>
+        <button class="copy-btn" data-copy="code-app" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-app">const BASE = 'https://data.etabus.gov.hk';
+
+// ② 取某路線的站點序列
+async function 取站點(route, dir, st) {
+  const res = await fetch(`${BASE}/v1/transport/kmb/route-stop/${route}/${dir}/${st}`);
+  return (await res.json()).data;
+}
+
+// ④ 取某站的即時到站時間
+async function 取到站時間(stopId) {
+  const res = await fetch(`${BASE}/v1/transport/kmb/stop-eta/${stopId}`);
+  return (await res.json()).data;
+}
+
+// ⑤ 每 30 秒更新一次
+setInterval(() => { 重新整理(); }, 30000);
+
+// 把 ISO 時間換成「還有幾分鐘」
+function 還有幾分鐘(etaISO) {
+  if (!etaISO) return '—';
+  const 分鐘 = Math.round((new Date(etaISO) - Date.now()) / 60000);
+  return 分鐘 &lt;= 0 ? '即將到站' : 分鐘 + ' 分鐘';
+}</pre>
+
+      <div class="card tint-green">
+        <h3>🎉 你已經具備做出這個 App 的所有知識</h3>
+        <p>這一章的成品，就是我們做好的「巴士 App」頁面。用真實的九巴資料，輸入路線 → 按站點 → 看到站時間，而且每 30 秒自動更新。</p>
+        <a class="btn btn-primary" href="bus-app.html" style="margin-top:10px">打開巴士 App →</a>
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>打開巴士 App，查路線 <code class="inline">1A</code>。找一個中途站按下去，看看「還有幾分鐘」。過 30 秒再看一次，數字有變化嗎？為什麼？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 9 章 ============ -->
+    <section class="chapter" id="ch9">
+      <div class="kicker">第 9 章（進階）</div>
+      <h2>打造你自己的 API</h2>
+      <p class="lead-q">你已經很會「用」別人的 API 了。這一章，換你當「提供 API 的人」。</p>
+
+      <h3>為什麼要自己蓋一層 API？</h3>
+      <ul class="clean">
+        <li><b>隱藏金鑰</b>：很多 API 需要付費金鑰，不能直接放在網頁原始碼裡被看光。放在你的伺服器上才安全。</li>
+        <li><b>整合多個來源</b>：把九巴 + 港鐵 + 天氣三個 API 合成一個「出行 API」。</li>
+        <li><b>統一格式</b>：把原始資料整理成你自己要的欄位，前端更輕鬆。</li>
+        <li><b>快取</b>：同一份資料不用每次都去問官方，減少流量、加快速度。</li>
+        <li><b>解決跨來源（CORS）</b>：有些官方 API 不允許瀏覽器直接呼叫，你就用伺服器當中間人代為轉發。</li>
+      </ul>
+
+      <h3>最簡單的形式：代理（Proxy）</h3>
+      <p>我們在專案裡附了一個 <code class="inline">server.js</code>（只用 Node 內建模組，<b>不用安裝任何套件</b>）。
+      它的核心就是「把 <code class="inline">/kmb/</code> 開頭的請求，轉發到九巴官方 API」：</p>
+      <div class="code-head"><span>server.js 的代理邏輯（簡化）</span>
+        <button class="copy-btn" data-copy="code-proxy" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-proxy">const https = require('https');
+
+function proxyKMB(req, res) {
+  // /kmb/v1/transport/kmb/route/  →  https://data.etabus.gov.hk/v1/transport/kmb/route/
+  const targetPath = req.url.replace(/^\/kmb/, '');
+
+  const proxied = https.request({ host: 'data.etabus.gov.hk', path: targetPath }, (upstream) => {
+    let body = '';
+    upstream.on('data', (c) => { body += c; });
+    upstream.on('end', () => {
+      res.writeHead(upstream.statusCode, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',   // 讓任何網頁都能呼叫
+      });
+      res.end(body);
+    });
+  });
+
+  proxied.end();
+}</pre>
+
+      <h3>再進一步：自己的端點</h3>
+      <p>你也可以定義一個全新的端點，例如 <code class="inline">/api/hello</code>，回傳你自己的 JSON：</p>
+      <div class="code-head"><span>自訂 API 端點</span>
+        <button class="copy-btn" data-copy="code-hello" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-hello">function apiHello(req, res) {
+  res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({
+    type: 'Hello',
+    version: '1.0',
+    generated_timestamp: new Date().toISOString(),
+    message: '恭喜！這是你自己寫的 API 端點。',
+  }, null, 2));
+}</pre>
+
+      <h3>怎麼跑起來？</h3>
+      <p>在專案資料夾開一個終端機（PowerShell），輸入：</p>
+      <div class="code-head"><span>啟動本機伺服器</span>
+        <button class="copy-btn" data-copy="code-run" onclick="copyCode(this)">複製</button></div>
+      <pre class="code" id="code-run">node server.js
+
+# 然後在瀏覽器打開：
+#   http://localhost:3000             → 本網站
+#   http://localhost:3000/api/hello   → 你的自建 API
+#   http://localhost:3000/kmb/v1/transport/kmb/route/   → 代理到九巴</pre>
+      <p>或者在 PowerShell 用指令直接測試（就像九巴工程師會做的事）：</p>
+      <pre class="code">Invoke-RestMethod 'http://localhost:3000/kmb/v1/transport/kmb/route/74B/outbound/1'</pre>
+
+      <div class="tip">
+        <strong>恭喜你走到這裡 🎓</strong>
+        你已經從「什麼是 API」一路學到「自己提供 API」。這就是一個完整的 Web 開發者每天都在做的事。
+        接下來最好的練習，就是把巴士 App 加上更多功能（例如收藏常用路線、地圖顯示站點位置）。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>用 <code class="inline">node server.js</code> 把網站跑起來，然後在瀏覽器打開 <code class="inline">http://localhost:3000/api/hello</code>，看看你自己的 API 回傳什麼。
+        再試試把 <code class="inline">/api/hello</code> 改成一條會回傳「現在時間 + 一句隨機鼓勵語」的 API。</p>
+      </div>
+
+      <div class="card tint-red" style="margin-top:20px">
+        <h3>接下來去哪裡？</h3>
+        <p>三條建議路線：</p>
+        <ul class="clean">
+          <li>🧪 到 <a href="playground.html">互動測試台</a> 把 9 個端點全部玩一遍，觀察不同的回應。</li>
+          <li>🚌 用 <a href="bus-app.html">巴士 App</a> 試不同路線，並在瀏覽器按 F12 看 Network 面板，觀察每次 fetch 送出的請求。</li>
+          <li>📚 打開 <a href="api-reference.html">API 文件</a>，對照每個欄位的定義，理解 Data Dictionary 的內容。</li>
+        </ul>
+      </div>
+    </section>
+
+  </article>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/tutorial.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+

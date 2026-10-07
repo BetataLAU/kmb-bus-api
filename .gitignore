@@ -1,0 +1,13 @@
+# 作業系統 / 編輯器
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 專案暫存檔（產生圖示、校正照片時用的腳本與預覽）
+_*.py
+_*.mjs
+_*.png
+.shot*.png
+
+# 原始參考 PDF（非網站內容；避免轉載第三方文件、保持 repo 精簡）
+*.pdf

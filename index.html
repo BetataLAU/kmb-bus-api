@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KMB Bus API 學習站 — 由零開始學會 API</title>
+<meta name="description" content="從零開始學會呼叫 API，並用九巴／龍運實時到站資料做實戰。">
+<!-- PWA（加到主畫面 / 可離線）-->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d81e06">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KMB Bus">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="index.html">
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <span class="badge">完全免費・免安裝・免註冊</span>
+    <h1>用「巴士到站時間」學會 API</h1>
+    <p class="lead">
+      這是一個給完全新手（零知識）的 API 入門網站。我們會用香港九巴（KMB）官方公開的
+      <strong>實時到站資料 API</strong>，從「API 是什麼」一路帶你到親手做出一個<b>查得到真實到站時間</b>的網站。
+      每一章都有可以按的按鈕，按下去就會看到真實的資料回傳。
+    </p>
+    <div class="flex">
+      <a class="btn btn-primary" href="tutorial.html">🚀 開始學習（第 1 章）</a>
+      <a class="btn btn-ghost" href="playground.html">🧪 直接玩 API 測試台</a>
+    </div>
+  </div>
+</section>
+
+<!-- 這個網站有什麼 -->
+<section class="section wrap">
+  <h2 class="section-title">這個網站有四個部分</h2>
+  <p class="section-sub">建議照順序走：先看教學建立觀念，再用測試台自己動手，最後做一個真正的 App。</p>
+  <div class="grid cols-2">
+    <div class="card tint-red">
+      <h3><span class="num">1</span>完整教學（由淺入深）</h3>
+      <p>9 個章節：什麼是 API、HTTP、JSON、參數、狀態碼、JavaScript 實作、錯誤處理，一路到打造自己的 API。每章都有 KMB 的真實資料範例。</p>
+      <a class="card-link" href="tutorial.html">前往教學 →</a>
+    </div>
+    <div class="card tint-green">
+      <h3><span class="num">2</span>互動測試台</h3>
+      <p>選一條 API、填上參數、按「送出」，馬上看到完整請求網址、HTTP 狀態碼、以及伺服器回傳的 JSON。不用寫任何一行程式碼。</p>
+      <a class="card-link" href="playground.html">打開測試台 →</a>
+    </div>
+    <div class="card tint-amber">
+      <h3><span class="num">3</span>實用巴士 App</h3>
+      <p>把所學串起來的成品：輸入路線 → 選方向 → 看沿途站點 → 按站點看即時到站時間（真的有在跳動）。</p>
+      <a class="card-link" href="bus-app.html">啟動巴士 App →</a>
+    </div>
+    <div class="card">
+      <h3><span class="num">4</span>API 參考文件</h3>
+      <p>把官方兩份 PDF（API Specifications、Data Dictionary）整理成一頁表格，隨時查每個端點與每個欄位的意義。</p>
+      <a class="card-link" href="api-reference.html">查閱文件 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 學習路線圖 -->
+<section class="section wrap" style="padding-top:0">
+  <h2 class="section-title">學習路線圖</h2>
+  <p class="section-sub">由 0 到 100%，每章約 5–10 分鐘。</p>
+  <div class="grid cols-3">
+    <a class="card" href="tutorial.html#ch1"><h3><span class="num">1</span>什麼是 API？</h3><p>用「餐廳點餐」的比喻，一次搞懂 API 在做什麼。</p></a>
+    <a class="card" href="tutorial.html#ch2"><h3><span class="num">2</span>認識 HTTP 請求</h3><p>網址、方法、路徑、參數、標頭，其實就是一句話。</p></a>
+    <a class="card" href="tutorial.html#ch3"><h3><span class="num">3</span>什麼是 JSON？</h3><p>伺服器回傳的資料長什麼樣，怎麼讀它。</p></a>
+    <a class="card" href="tutorial.html#ch4"><h3><span class="num">4</span>你的第一個請求</h3><p>按一個按鈕，親手拿到九巴全部路線清單。</p></a>
+    <a class="card" href="tutorial.html#ch5"><h3><span class="num">5</span>路徑與參數</h3><p>為什麼 /route/74B/outbound/1 能查到指定路線。</p></a>
+    <a class="card" href="tutorial.html#ch6"><h3><span class="num">6</span>狀態碼與錯誤</h3><p>200、422、500 是什麼？出錯時怎麼處理。</p></a>
+    <a class="card" href="tutorial.html#ch7"><h3><span class="num">7</span>用 JS 寫程式呼叫</h3><p>用 fetch() 把 API 接到你的網頁。</p></a>
+    <a class="card" href="tutorial.html#ch8"><h3><span class="num">8</span>組合實戰：到站 App</h3><p>把前面全部串起來，做一個真的能用的頁面。</p></a>
+    <a class="card" href="tutorial.html#ch9"><h3><span class="num">9</span>打造自己的 API</h3><p>進階：蓋一層自己的 API／代理伺服器。</p></a>
+  </div>
+</section>
+
+<!-- 這個 API 是什麼 -->
+<section class="section wrap" style="padding-top:0">
+  <div class="card">
+    <h2 class="section-title">我們要用的 API：KMB 實時到站資料</h2>
+    <p class="section-sub">
+      由九龍巴士（KMB）及龍運巴士（LWB）提供的 RESTful API，回傳 JSON 格式。所有端點共用同一個 Base URL：
+    </p>
+    <div class="urlline"><span class="m">GET</span> https://data.etabus.gov.hk<span class="p">/v1/transport/kmb/route/</span></div>
+    <p style="margin-top:16px">它提供 9 個主要端點（Endpoint）：</p>
+    <table class="data">
+      <tr><th>功能</th><th>Endpoint（路徑）</th></tr>
+      <tr><td>全部路線清單</td><td><code>/v1/transport/kmb/route/</code></td></tr>
+      <tr><td>指定路線資料</td><td><code>/v1/transport/kmb/route/{route}/{direction}/{service_type}</code></td></tr>
+      <tr><td>全部站點清單</td><td><code>/v1/transport/kmb/stop</code></td></tr>
+      <tr><td>指定站點資料</td><td><code>/v1/transport/kmb/stop/{stop_id}</code></td></tr>
+      <tr><td>指定路線的站點序列</td><td><code>/v1/transport/kmb/route-stop/{route}/{direction}/{service_type}</code></td></tr>
+      <tr><td>某站＋某路線的到站時間</td><td><code>/v1/transport/kmb/eta/{stop_id}/{route}/{service_type}</code></td></tr>
+      <tr><td>某站所有路線的到站時間</td><td><code>/v1/transport/kmb/stop-eta/{stop_id}</code></td></tr>
+      <tr><td>某路線全程的到站時間</td><td><code>/v1/transport/kmb/route-eta/{route}/{service_type}</code></td></tr>
+    </table>
+    <p class="muted">完整說明請看 <a href="api-reference.html">API 文件</a>。</p>
+  </div>
+</section>
+
+<script src="js/common.js"></script>
+</body>
+</html>

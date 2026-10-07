@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互動測試台 — KMB Bus API 學習站</title>
+<!-- PWA（加到主畫面 / 可離線）-->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d81e06">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KMB Bus">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="playground.html">
+
+<section class="hero" style="padding:0">
+  <div class="hero-inner" style="padding:40px 18px 32px">
+    <span class="badge">不用寫程式也能玩</span>
+    <h1 style="font-size:clamp(1.6rem,3.4vw,2.2rem)">互動測試台</h1>
+    <p class="lead" style="margin-bottom:0">
+      選一條 API、填上參數、按「送出」。你會看到完整的<b>請求網址</b>、<b>HTTP 狀態碼</b>，以及伺服器回傳的<b>JSON</b>。
+      這就是工程師平常「測試 API」的樣子。
+    </p>
+  </div>
+</section>
+
+<section class="section wrap">
+  <div class="grid" style="grid-template-columns: 1fr; gap:20px">
+
+    <!-- 請求區 -->
+    <div class="card">
+      <h3 class="mt0">① 選擇 API 與參數</h3>
+
+      <div class="field">
+        <label for="pg-endpoint">選擇端點（Endpoint）</label>
+        <select id="pg-endpoint"></select>
+      </div>
+      <p class="muted" id="pg-desc" style="margin-top:-6px"></p>
+
+      <div id="pg-params" class="row-form"></div>
+
+      <div class="flex" style="margin-top:6px">
+        <button class="btn btn-primary" id="pg-send">▶ 送出請求</button>
+        <button class="btn btn-ghost btn-sm" id="pg-clear">清除結果</button>
+        <label class="muted" style="font-size:.85rem; display:flex; gap:6px; align-items:center">
+          <input type="checkbox" id="pg-proxy" style="width:auto">
+          透過本機代理（需先執行 node server.js）
+        </label>
+      </div>
+    </div>
+
+    <!-- 結果區 -->
+    <div class="card">
+      <h3 class="mt0">② 查看結果</h3>
+      <div class="status-line" id="pg-url"></div>
+      <div class="status-line" id="pg-status">尚未送出請求。</div>
+      <div id="pg-out"></div>
+    </div>
+
+  </div>
+
+  <div class="note" style="margin-top:22px">
+    <strong>小提示</strong>
+    想看得更仔細嗎？在瀏覽器按 <code class="inline">F12</code> 打開開發者工具，切到 <b>Network（網路）</b> 面板，
+    再按一次「送出請求」，就能看到這個請求的所有細節（網址、標頭、回應）。這就是除錯 API 的方法。
+  </div>
+</section>
+
+<script src="js/common.js"></script>
+<script src="js/playground.js"></script>
+</body>
+</html>

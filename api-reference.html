@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API 參考文件 — KMB Bus API 學習站</title>
+<!-- PWA（加到主畫面 / 可離線）-->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d81e06">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KMB Bus">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="api-reference.html">
+
+<section class="hero" style="padding:0">
+  <div class="hero-inner" style="padding:40px 18px 30px">
+    <span class="badge">整理自官方兩份 PDF</span>
+    <h1 style="font-size:clamp(1.6rem,3.4vw,2.2rem)">API 參考文件</h1>
+    <p class="lead" style="margin-bottom:0">
+      把《API Specifications v1.05》與《Data Dictionary v1.02》整理成一頁。要找端點、找欄位意義，來這裡就對了。
+    </p>
+    <div class="flex" style="margin-top:8px">
+      <a class="btn btn-ghost btn-sm" href="#s-endpoints">端點一覽</a>
+      <a class="btn btn-ghost btn-sm" href="#s-fields">資料欄位</a>
+      <a class="btn btn-ghost btn-sm" href="#s-error">錯誤處理</a>
+    </div>
+  </div>
+</section>
+
+<section class="section wrap">
+
+  <!-- Base URL -->
+  <div class="card">
+    <h2 class="section-title">Base URL</h2>
+    <div class="urlline">https://data.etabus.gov.hk/</div>
+    <p class="muted" style="margin-top:10px">所有端點都接在此之後。⚠️ 官方註明：<b>網址與參數大小寫敏感</b>。</p>
+  </div>
+
+  <!-- 端點一覽 -->
+  <h2 class="section-title" id="s-endpoints" style="margin-top:30px; scroll-margin-top:80px">端點一覽（9 個主要 API）</h2>
+  <table class="data">
+    <tr><th>方法</th><th>Endpoint</th><th>功能</th><th>更新頻率</th></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/route/</code></td><td>全部路線清單</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/route/{route}/{direction}/{service_type}</code></td><td>指定路線</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/stop</code></td><td>全部站點清單</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/stop/{stop_id}</code></td><td>指定站點</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/route-stop</code></td><td>全部路線-站點</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/route-stop/{route}/{direction}/{service_type}</code></td><td>指定路線的站點序列</td><td>每日 05:00</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/eta/{stop_id}/{route}/{service_type}</code></td><td>站＋路線 到站時間</td><td>即時</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/stop-eta/{stop_id}</code></td><td>站（全部路線）到站時間</td><td>即時</td></tr>
+    <tr><td><span class="pill get">GET</span></td><td><code>/v1/transport/kmb/route-eta/{route}/{service_type}</code></td><td>路線（兩方向全程）到站時間</td><td>即時</td></tr>
+  </table>
+
+  <h3 style="margin-top:26px">路徑參數說明</h3>
+  <table class="data">
+    <tr><th>參數</th><th>型別</th><th>說明</th><th>必填</th></tr>
+    <tr><td><code>route</code></td><td>Path</td><td>路線號碼，大小寫敏感（例：74B、1A）。</td><td>Y</td></tr>
+    <tr><td><code>direction</code></td><td>Path</td><td>方向，只接受 <code>outbound</code>（去程）或 <code>inbound</code>（回程），全小寫。</td><td>Y</td></tr>
+    <tr><td><code>service_type</code></td><td>Path</td><td>服務類型，常見 <code>1</code>（普通）或 <code>2</code>（特別）。</td><td>Y</td></tr>
+    <tr><td><code>stop_id</code></td><td>Path</td><td>16 字元的站點 ID，大小寫敏感。</td><td>Y</td></tr>
+  </table>
+  <div class="note">
+    <strong>方向代碼的兩種寫法</strong>
+    「查詢網址」用 <code class="inline">outbound</code> / <code class="inline">inbound</code>；
+    但「回傳資料」裡的方向欄位（<code class="inline">bound</code> 或 <code class="inline">dir</code>）用的是 <code class="inline">O</code> / <code class="inline">I</code>。
+    兩者別搞混。
+  </div>
+</section>
+
+<section class="section wrap" style="padding-top:0">
+  <h2 class="section-title" id="s-fields" style="scroll-margin-top:80px">資料欄位（Data Dictionary）</h2>
+  <p class="section-sub">回應的 JSON 結構。每個回應都有共同的 <code class="inline">type / version / generated_timestamp / data</code>。</p>
+
+  <h3>共同欄位（所有回應）</h3>
+  <table class="data">
+    <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+    <tr><td><code>type</code></td><td>String</td><td>資料種類：Route / RouteList / Stop / StopList / RouteStop / RouteStopList / ETA / StopETA / RouteETA。</td></tr>
+    <tr><td><code>version</code></td><td>String</td><td>JSON 版本，例如 "1.0"。</td></tr>
+    <tr><td><code>generated_timestamp</code></td><td>String</td><td>回應產生（並快取前）的時間，ISO 8601 格式（含時區）。</td></tr>
+    <tr><td><code>data</code></td><td>Object / Array</td><td>你真正要的資料。清單類 API 為陣列，單筆類為物件。</td></tr>
+  </table>
+
+  <h3>2.1 Route / Route List</h3>
+  <table class="data">
+    <tr><th>欄位</th><th>型別</th><th>說明</th><th>例子</th></tr>
+    <tr><td><code>co</code></td><td>String</td><td>巴士公司，固定為 "KMB"（含九巴與龍運）。</td><td><code>"KMB"</code></td></tr>
+    <tr><td><code>route</code></td><td>String</td><td>路線號碼。</td><td><code>"74B"</code></td></tr>
+    <tr><td><code>bound</code></td><td>String</td><td>方向：<code>I</code> 回程 / <code>O</code> 去程。</td><td><code>"O"</code></td></tr>
+    <tr><td><code>service_type</code></td><td>String</td><td>服務類型。</td><td><code>"1"</code></td></tr>
+    <tr><td><code>orig_en / orig_tc / orig_sc</code></td><td>String</td><td>起點（英／繁中／簡中）。</td><td><code>"九龍灣"</code></td></tr>
+    <tr><td><code>dest_en / dest_tc / dest_sc</code></td><td>String</td><td>目的地（英／繁中／簡中）。</td><td><code>"大埔中心"</code></td></tr>
+    <tr><td><code>data_timestamp</code></td><td>String</td><td>資料在來源產生時間（ISO 8601）。</td><td><code>"2024-11-29T11:40:00+08:00"</code></td></tr>
+  </table>
+
+  <h3>2.2 Stop / Stop List</h3>
+  <table class="data">
+    <tr><th>欄位</th><th>型別</th><th>說明</th><th>例子</th></tr>
+    <tr><td><code>stop</code></td><td>String</td><td>站點 ID（16 字元）。</td><td><code>"A3ADFCDF8487ADB9"</code></td></tr>
+    <tr><td><code>name_tc / name_en / name_sc</code></td><td>String</td><td>站名（繁中／英／簡中）。</td><td><code>"中秀茂坪"</code></td></tr>
+    <tr><td><code>lat</code></td><td>String</td><td>緯度（WGS84 十進位度）。</td><td><code>22.318856</code></td></tr>
+    <tr><td><code>long</code></td><td>String</td><td>經度（WGS84 十進位度）。</td><td><code>114.231353</code></td></tr>
+    <tr><td><code>data_timestamp</code></td><td>String</td><td>資料來源時間。</td><td><code>"2024-11-29T11:40:00+08:00"</code></td></tr>
+  </table>
+
+  <h3>2.3 Route-Stop / Route-Stop List</h3>
+  <table class="data">
+    <tr><th>欄位</th><th>型別</th><th>說明</th><th>例子</th></tr>
+    <tr><td><code>co</code></td><td>String</td><td>巴士公司。</td><td><code>"KMB"</code></td></tr>
+    <tr><td><code>route</code></td><td>String</td><td>路線號碼。</td><td><code>"1A"</code></td></tr>
+    <tr><td><code>bound</code></td><td>String</td><td>方向 <code>I</code>/<code>O</code>。</td><td><code>"O"</code></td></tr>
+    <tr><td><code>service_type</code></td><td>String</td><td>服務類型。</td><td><code>"1"</code></td></tr>
+    <tr><td><code>seq</code></td><td>Numeric</td><td>站序（第幾站）。</td><td><code>1</code></td></tr>
+    <tr><td><code>stop</code></td><td>String</td><td>站點 ID。</td><td><code>"A3ADFCDF8487ADB9"</code></td></tr>
+    <tr><td><code>data_timestamp</code></td><td>String</td><td>資料來源時間。</td><td><code>"2024-11-29T11:40:00+08:00"</code></td></tr>
+  </table>
+
+  <h3>2.4 ETA / Stop ETA / Route ETA</h3>
+  <table class="data">
+    <tr><th>欄位</th><th>型別</th><th>說明</th><th>例子</th></tr>
+    <tr><td><code>co</code></td><td>String</td><td>巴士公司。</td><td><code>"KMB"</code></td></tr>
+    <tr><td><code>route</code></td><td>String</td><td>路線號碼。</td><td><code>"40"</code></td></tr>
+    <tr><td><code>dir</code></td><td>String</td><td>方向：<code>I</code> 回程 / <code>O</code> 去程。</td><td><code>"O"</code></td></tr>
+    <tr><td><code>service_type</code></td><td>Numeric</td><td>服務類型。</td><td><code>1</code></td></tr>
+    <tr><td><code>seq</code></td><td>Numeric</td><td>該站在此路線的站序。</td><td><code>7</code></td></tr>
+    <tr><td><code>stop</code></td><td>String</td><td>站點 ID。<span class="muted">（僅 ETA API 回應包含此欄）</span></td><td><code>"A60AE774B09A5E44"</code></td></tr>
+    <tr><td><code>dest_tc / dest_sc / dest_en</code></td><td>String</td><td>目的地（繁中／簡中／英）。</td><td><code>"麗港城"</code></td></tr>
+    <tr><td><code>eta_seq</code></td><td>Numeric</td><td>第幾班的預估（1 = 最近）。每方向最多 3 筆。</td><td><code>1</code></td></tr>
+    <tr><td><code>eta</code></td><td>String</td><td>預計到站時間（ISO 8601）。<b>可能為 <code>null</code></b>（暫無資料）。</td><td><code>"2024-11-29T17:25:51+08:00"</code></td></tr>
+    <tr><td><code>rmk_tc / rmk_sc / rmk_en</code></td><td>String</td><td>備註（例如「原定班次」），可能為空字串。</td><td><code>"原定班次"</code></td></tr>
+    <tr><td><code>data_timestamp</code></td><td>String</td><td>資料來源時間。</td><td><code>"2024-11-29T17:22:15+08:00"</code></td></tr>
+  </table>
+  <div class="tip">
+    <strong>重點</strong>
+    每條路線每個方向最多回傳 3 筆 ETA（<code class="inline">eta_seq</code> 1~3）。<code class="inline">eta</code> 是 <code class="inline">null</code> 時，
+    代表目前查不到該班次的預估時間（例如還沒發車），程式要能處理這種情況，不要直接當成錯誤。
+  </div>
+</section>
+
+<section class="section wrap" style="padding-top:0">
+  <h2 class="section-title" id="s-error" style="scroll-margin-top:80px">狀態碼與錯誤處理</h2>
+  <table class="data">
+    <tr><th>狀態碼</th><th>意思</th><th>回應內容</th></tr>
+    <tr><td><span class="pill ok">200</span></td><td>成功</td><td>正常的 JSON 資料。<b>注意：查無資料時也是 200，但 <code>data</code> 為空。</b></td></tr>
+    <tr><td><span class="pill err">422</span></td><td>參數錯誤或缺少</td><td><code>{ "code": 422, "message": "Invalid/Missing parameter(s)." }</code><br>或 <code>{ "code": 422, "message": "Invalid direction." }</code></td></tr>
+    <tr><td><span class="pill warn">500</span></td><td>伺服器內部錯誤</td><td>錯誤訊息（JSON）。</td></tr>
+  </table>
+  <p>發生錯誤時，回應內容用 <code class="inline">code</code> 與 <code class="inline">message</code> 兩個欄位描述問題：</p>
+  <div class="code-head"><span>錯誤回應範例（422）</span></div>
+  <pre class="code">{
+  <span class="key">"code"</span>: <span class="num">422</span>,
+  <span class="key">"message"</span>: <span class="str">"Invalid/Missing parameter(s)."</span>
+}</pre>
+  <div class="code-head"><span>查無資料範例（200，但 data 為空）</span></div>
+  <pre class="code">{
+  <span class="key">"type"</span>: <span class="str">"Route"</span>,
+  <span class="key">"version"</span>: <span class="str">"1.0"</span>,
+  <span class="key">"generated_timestamp"</span>: <span class="str">"2024-11-29T15:37:44+08:00"</span>,
+  <span class="key">"data"</span>: {}
+}</pre>
+  <div class="note">
+    <strong>實測小結</strong>
+    <ul class="clean" style="margin:6px 0 0">
+      <li>方向拼錯（如 <code class="inline">sideways</code>）→ <b>422 Invalid direction.</b></li>
+      <li>缺少參數（如少了 service_type）→ <b>422 Invalid/Missing parameter(s).</b></li>
+      <li>路線不存在（如 <code class="inline">999XYZ</code>）→ <b>200</b>，但 <code class="inline">data</code> 是 <code class="inline">{}</code>。</li>
+      <li>站點不存在 → <b>200</b>，但 <code class="inline">data</code> 是 <code class="inline">[]</code>。</li>
+    </ul>
+  </div>
+
+  <div class="card tint-green" style="margin-top:20px">
+    <h3>想動手試試看？</h3>
+    <p>到 <a href="playground.html">互動測試台</a> 選任一端點送出請求，就能看到真實回應；把參數故意打錯，就能重現 422。</p>
+    <a class="btn btn-primary" href="playground.html" style="margin-top:10px">打開測試台 →</a>
+  </div>
+
+  <p class="muted" style="margin-top:26px">
+    文件依據：KMB / LWB《Real-time Arrival Information — API Specifications v1.05 (23 Oct 2024)》與《Data Dictionary v1.02 (10 May 2021)》。
+  </p>
+</section>
+
+<script src="js/common.js"></script>
+</body>
+</html>
+
+
