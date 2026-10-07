@@ -23,7 +23,7 @@
     <h1 style="font-size:clamp(1.6rem,3.4vw,2.2rem)">九巴實時到站 App</h1>
     <p class="lead" style="margin-bottom:0">
       輸入路線 → 選方向 → 點站點，就看到<b>真實的預計到站時間</b>。資料每 30 秒自動更新。
-      這個頁面，就是把教學第 8 章教的東西做出來。
+      這個頁面，就是把教學第 9 章教的東西做出來。
     </p>
   </div>
 </section>
@@ -71,6 +71,19 @@
     <code class="inline">/route-stop/…</code>（站點序列）→ <code class="inline">/stop</code>（站名）→
     <code class="inline">/stop-eta/…</code>（即時到站）。
     按 <b>F12 → Network</b> 可以看到每一次請求。
+  </div>
+
+  <!-- 請求記錄（迷你版 F12 Network） -->
+  <div class="card" style="margin-top:20px">
+    <div class="spread">
+      <h3 class="mt0">📡 請求記錄（迷你版 F12 Network）</h3>
+      <div class="flex">
+        <span class="muted" id="req-log-count"></span>
+        <button class="btn btn-ghost btn-sm" id="req-log-clear">清除</button>
+      </div>
+    </div>
+    <p class="muted">這個 App 每呼叫一次 API（路線、站點、到站時間）都會即時列在這裡——就像 F12 的 Network 面板。你能看到它其實是按順序呼叫了好幾個端點。</p>
+    <div class="req-log" id="req-log-body"></div>
   </div>
 </section>
 

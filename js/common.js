@@ -156,7 +156,103 @@ function isEmptyData(data) {
 document.addEventListener('DOMContentLoaded', injectChrome);
 
 
-/* ---------- 4. 複製程式碼按鈕 ---------- */
+/* ---------- 4. API 請求記錄（頁面內建「迷你版 F12 Network」） ----------
+   把 window.fetch 包一層，凡是「本站發出」的請求都會被記錄下來，
+   再畫進頁面上的 #req-log-body 面板（若該頁有這個元素）。 */
+const RequestLog = {
+  max: 60,
+  seq: 0,
+  entries: [],
+  listeners: [],
+  add(entry) {
+    this.seq += 1;
+    this.entries.unshift(Object.assign({ n: this.seq }, entry));
+    if (this.entries.length > this.max) this.entries.length = this.max;
+    this.emit();
+  },
+  clear() { this.entries = []; this.emit(); },
+  subscribe(fn) { this.listeners.push(fn); fn(this.entries); },
+  emit() { this.listeners.forEach((fn) => fn(this.entries)); },
+};
+
+/* 安裝 fetch 記錄器（在 common.js 載入時就執行，早於其他頁面程式） */
+function installFetchLogger() {
+  if (window.__reqLogInstalled || typeof window.fetch !== 'function') return;
+  window.__reqLogInstalled = true;
+  const orig = window.fetch.bind(window);
+  window.fetch = async function (input, init) {
+    const url = typeof input === 'string' ? input : ((input && input.url) || String(input));
+    const method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    const t0 = performance.now();
+    try {
+      const res = await orig(input, init);
+      const cl = res.headers.get('content-length');   // Content-Length 是 CORS 可讀的安全標頭
+      RequestLog.add({
+        url, method, status: res.status, ok: res.ok,
+        ms: Math.round(performance.now() - t0),
+        bytes: cl == null ? null : parseInt(cl, 10),
+      });
+      return res;
+    } catch (err) {
+      RequestLog.add({
+        url, method, status: 0, ok: false,
+        ms: Math.round(performance.now() - t0), bytes: null,
+        error: String(err && err.message ? err.message : err),
+      });
+      throw err;
+    }
+  };
+}
+installFetchLogger();
+
+/* 把完整網址縮短成好讀的路徑（去掉官方網域 / 本機 origin） */
+function shortUrl(url) {
+  return String(url)
+    .replace(KMB_BASE, '')
+    .replace(location.origin + '/kmb', '/kmb')
+    .replace(location.origin, '');
+}
+
+/* 依狀態碼產生彩色標籤（共用給請求記錄面板） */
+function httpPill(status, ok) {
+  if (status === 0) return `<span class="pill err">連線失敗</span>`;
+  const cls = ok ? 'ok' : (status >= 500 ? 'warn' : 'err');
+  return `<span class="pill ${cls}">HTTP ${status}</span>`;
+}
+
+/* 把請求記錄畫進 #req-log-body（若頁面沒有這個元素就略過） */
+function initRequestLog() {
+  const body = document.getElementById('req-log-body');
+  if (!body) return;
+  const countEl = document.getElementById('req-log-count');
+  const clearBtn = document.getElementById('req-log-clear');
+
+  function row(e) {
+    const size = e.bytes == null ? '—' : (e.bytes / 1024).toFixed(1) + ' KB';
+    return `<div class="req-row">
+      <span class="n">#${e.n}</span>
+      <span class="m">${esc(e.method)}</span>
+      <span class="u">${esc(shortUrl(e.url))}</span>
+      <span>${httpPill(e.status, e.ok)}</span>
+      <span class="meta">${e.ms} ms</span>
+      <span class="meta">${size}</span>
+    </div>`;
+  }
+
+  function render(list) {
+    if (countEl) countEl.textContent = list.length ? `共 ${list.length} 筆（最新在上）` : '';
+    body.innerHTML = list.length
+      ? list.map(row).join('')
+      : `<div class="req-empty">還沒有任何請求。按上面的按鈕送出一次，這裡就會出現記錄。</div>`;
+  }
+
+  if (clearBtn) clearBtn.addEventListener('click', () => RequestLog.clear());
+  RequestLog.subscribe(render);
+}
+document.addEventListener('DOMContentLoaded', initRequestLog);
+
+
+/* ---------- 5. 複製程式碼按鈕 ---------- */
 function copyCode(btn) {
   const target = document.getElementById(btn.dataset.copy);
   if (!target) return;
@@ -179,7 +275,7 @@ function codeBlockHTML(id, label, code) {
     <pre class="code" id="${id}">${esc(code)}</pre>`;
 }
 
-/* ---------- 5. 註冊 Service Worker（PWA：可加到主畫面、可離線）---------- */
+/* ---------- 6. 註冊 Service Worker（PWA：可加到主畫面、可離線）---------- */
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => { /* file:// 或舊瀏覽器：忽略 */ });

@@ -179,6 +179,7 @@ a:hover { text-decoration: underline; }
 
 /* ---------- 卡片網格 ---------- */
 .grid { display: grid; gap: 18px; }
+.grid > * { min-width: 0; }   /* 讓卡片可縮到容器寬，避免長字串（JSON／網址）把整欄撐寬 */
 .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
 .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 820px) {
@@ -235,6 +236,7 @@ pre.code {
   padding: 16px 18px;
   border-radius: 12px;
   overflow: auto;
+  max-height: 520px;          /* 避免超長 JSON（如路線清單）把整頁撐到極高 */
   font-family: "Cascadia Code", Consolas, "Courier New", monospace;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -343,7 +345,10 @@ input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.status-line { font-size: 0.9rem; color: var(--muted); margin: 8px 0; min-height: 22px; }
+.status-line {
+  font-size: 0.9rem; color: var(--muted); margin: 8px 0; min-height: 22px;
+  overflow-wrap: anywhere; word-break: break-word;   /* 讓長網址可斷行，不撐寬版面 */
+}
 
 /* ---------- 側邊目錄 (教學頁) ---------- */
 .layout {
@@ -395,3 +400,20 @@ ul.clean li { margin: 6px 0; }
 .flex { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .spread { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .hidden { display: none !important; }
+
+/* ---------- 請求記錄面板（頁面內建「迷你版 F12 Network」） ---------- */
+.req-log { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+.req-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: 0.85rem;
+}
+.req-row:last-child { border-bottom: none; }
+.req-row:nth-child(odd) { background: #fbfcfe; }
+.req-row .n { color: var(--muted); min-width: 24px; }
+.req-row .m { font-weight: 800; font-size: 0.76rem; color: var(--accent); min-width: 44px; }
+.req-row .u {
+  font-family: monospace; color: var(--red-dark);
+  overflow-wrap: anywhere; word-break: break-all; flex: 1 1 200px;
+}
+.req-row .meta { color: var(--muted); white-space: nowrap; }
+.req-empty { padding: 16px 14px; color: var(--muted); font-size: 0.9rem; }

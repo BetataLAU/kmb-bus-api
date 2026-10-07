@@ -27,9 +27,10 @@
     <a href="#ch4">4. 你的第一個請求</a>
     <a href="#ch5">5. 路徑與參數</a>
     <a href="#ch6">6. 狀態碼與錯誤</a>
-    <a href="#ch7">7. 用 JS 呼叫 API</a>
-    <a href="#ch8">8. 組合實戰</a>
-    <a href="#ch9">9. 打造自己的 API</a>
+    <a href="#ch7">7. 用 F12 觀察 API</a>
+    <a href="#ch8">8. 用 JS 呼叫 API</a>
+    <a href="#ch9">9. 組合實戰</a>
+    <a href="#ch10">10. 打造自己的 API</a>
   </aside>
 
   <article class="article">
@@ -380,7 +381,7 @@ console.log('第一條：' + result.data[0].route + ' 往 ' + result.data[0].des
           <li><b>參數格式不合法</b>（拼錯方向、缺少參數）→ 回 <span class="pill err">422</span>，附錯誤訊息。</li>
           <li><b>參數合法但查無資料</b>（路線不存在）→ 回 <span class="pill ok">200</span>，但 <code class="inline">data</code> 是<b>空的</b>（<code class="inline">{}</code> 或 <code class="inline">[]</code>）。</li>
         </ul>
-        所以你不能只檢查「狀態碼是不是 200」，還要檢查 <b>data 是不是空的</b>！這就是第 7 章會教你的寫法。
+        所以你不能只檢查「狀態碼是不是 200」，還要檢查 <b>data 是不是空的</b>！這就是第 8 章會教你的寫法。
       </div>
 
 
@@ -428,6 +429,76 @@ console.log('第一條：' + result.data[0].route + ' 往 ' + result.data[0].des
     <!-- ============ 第 7 章 ============ -->
     <section class="chapter" id="ch7">
       <div class="kicker">第 7 章</div>
+      <h2>用瀏覽器 F12 觀察 API</h2>
+      <p class="lead-q">前面的按鈕幫你「看到結果」。這一章教你工程師真正的千里眼——<strong>瀏覽器內建的開發者工具（DevTools）</strong>，打開它，就能看到每一次請求的完整祕密。</p>
+
+      <h3>① 怎麼打開開發者工具？</h3>
+      <ul class="clean">
+        <li><b>Windows / Linux</b>：按 <code class="inline">F12</code>，或 <code class="inline">Ctrl</code> + <code class="inline">Shift</code> + <code class="inline">I</code>。</li>
+        <li><b>Mac</b>：按 <code class="inline">⌘</code> + <code class="inline">⌥</code> + <code class="inline">I</code>（Safari 要先到「設定 → 進階」勾選「顯示網頁開發功能」）。</li>
+        <li><b>任何裝置</b>：在想看的元素上按右鍵 → 「檢查（Inspect）」。</li>
+      </ul>
+
+      <h3>② 切到「Network（網路）」面板</h3>
+      <p>開發者工具上方有一排分頁：<b>Elements</b>、<b>Console</b>、<b>Network</b>、<b>Sources</b>…。點 <b>Network</b>，然後<b>重新整理頁面</b>或<b>再按一次按鈕</b>，就會看到一列列的請求。把篩選器切成 <b>Fetch/XHR</b>，畫面就只留下「程式發出的 API 請求」。</p>
+      <table class="data">
+        <tr><th>Network 看到的欄位</th><th>意思</th></tr>
+        <tr><td><code>Name</code></td><td>請求的名稱／路徑</td></tr>
+        <tr><td><code>Status</code></td><td>HTTP 狀態碼（<span class="pill ok">200</span>、<span class="pill err">422</span>…）</td></tr>
+        <tr><td><code>Type</code></td><td>資源類型（API 通常是 <code>fetch</code> / <code>xhr</code>）</td></tr>
+        <tr><td><code>Size</code></td><td>回應大小</td></tr>
+        <tr><td><code>Time</code></td><td>這趟請求花了多久</td></tr>
+      </table>
+
+      <h3>③ 點一個請求，看它的「四張卡」</h3>
+      <ul class="clean">
+        <li><b>Headers</b>：請求與回應的標頭（含狀態碼、Content-Type）。</li>
+        <li><b>Payload</b>：送出去的參數（GET 通常沒有）。</li>
+        <li><b>Response / Preview</b>：伺服器回傳的 JSON 原文。</li>
+        <li><b>Timing</b>：這趟請求各階段花了多少毫秒。</li>
+      </ul>
+
+      <div class="card">
+        <div class="spread">
+          <strong>動手：發一個請求，然後在 F12 找到它</strong>
+          <button class="btn btn-primary btn-sm" id="f12-go">▶ 發出示範請求</button>
+        </div>
+        <div class="status-line" id="f12-status"></div>
+        <div id="f12-out"></div>
+      </div>
+
+      <div class="tip">
+        <strong>操作順序</strong>
+        先按 <b>F12</b> → 切到 <b>Network</b> → 點 <b>Fetch/XHR</b> → 再按上面的「發出示範請求」。
+        你會在列表最下方看到一條新的 <code class="inline">route/</code> 請求，點它，右側就是它的一切。
+      </div>
+
+      <h3>④ 本站內建的「迷你版 Network」</h3>
+      <p>不想每次開 F12？本站每一頁都放了<b>請求記錄面板</b>，把 Network 的重點直接畫在網頁上，按鈕一按就即時記錄。</p>
+      <div class="card">
+        <div class="spread">
+          <h3 class="mt0">📡 請求記錄（迷你版 F12 Network）</h3>
+          <div class="flex">
+            <span class="muted" id="req-log-count"></span>
+            <button class="btn btn-ghost btn-sm" id="req-log-clear">清除</button>
+          </div>
+        </div>
+        <p class="muted">每一次本站向 API 發出的請求，都會列在這裡——就像 F12 的 Network 面板。</p>
+        <div class="req-log" id="req-log-body"></div>
+      </div>
+
+      <h3>⑤ 出錯時，先看 Console</h3>
+      <p>如果程式裡有 <code class="inline">console.error(…)</code>（第 6 章的範例寫過），錯誤訊息會出現在 <b>Console</b> 面板，紅色那行就是問題所在。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>打開 F12 → Network，按上面「發出示範請求」。找出那條 <code class="inline">route/</code>：它的狀態碼是多少？<b>Response</b> 的第一行是什麼？整趟花了幾毫秒？再對照下方的「請求記錄面板」，數字一樣嗎？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 8 章 ============ -->
+    <section class="chapter" id="ch8">
+      <div class="kicker">第 8 章</div>
       <h2>用 JavaScript 寫程式呼叫 API</h2>
       <p class="lead-q">前面都是按鈕幫你按。這一章，我們看清楚「一個會呼叫 API 的網頁」是怎麼寫出來的。</p>
 
@@ -486,17 +557,17 @@ async function 查路線() {
         <div class="spread">
           <strong>實作：輸入路線，看目的地</strong>
           <div class="flex">
-            <input type="text" id="ch7-route" value="74B" style="width:120px">
-            <button class="btn btn-primary btn-sm" id="ch7-go">▶ 查詢</button>
+            <input type="text" id="ch8-route" value="74B" style="width:120px">
+            <button class="btn btn-primary btn-sm" id="ch8-go">▶ 查詢</button>
           </div>
         </div>
-        <div class="status-line" id="ch7-status"></div>
-        <div id="ch7-out"></div>
+        <div class="status-line" id="ch8-status"></div>
+        <div id="ch8-out"></div>
       </div>
 
       <div class="tip">
         <strong>看得出來嗎？</strong>
-        上面這個小工具，其實就是用第 7 章的程式碼做的。你已經有能力寫出它了！
+        上面這個小工具，其實就是用第 8 章的程式碼做的。你已經有能力寫出它了！
       </div>
 
       <div class="exercise">
@@ -505,9 +576,9 @@ async function 查路線() {
       </div>
     </section>
 
-    <!-- ============ 第 8 章 ============ -->
-    <section class="chapter" id="ch8">
-      <div class="kicker">第 8 章</div>
+    <!-- ============ 第 9 章 ============ -->
+    <section class="chapter" id="ch9">
+      <div class="kicker">第 9 章</div>
       <h2>組合實戰：做一個「實時到站」App</h2>
       <p class="lead-q">把前面所有東西串起來，做出一個真的能用的頁面：<strong>輸入路線 → 看站點 → 看即時到站時間</strong>。</p>
 
@@ -583,9 +654,9 @@ function 還有幾分鐘(etaISO) {
       </div>
     </section>
 
-    <!-- ============ 第 9 章 ============ -->
-    <section class="chapter" id="ch9">
-      <div class="kicker">第 9 章（進階）</div>
+    <!-- ============ 第 10 章 ============ -->
+    <section class="chapter" id="ch10">
+      <div class="kicker">第 10 章（進階）</div>
       <h2>打造你自己的 API</h2>
       <p class="lead-q">你已經很會「用」別人的 API 了。這一章，換你當「提供 API 的人」。</p>
 

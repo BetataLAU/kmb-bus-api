@@ -112,13 +112,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* -------- 第 7 章：輸入路線，顯示目的地 -------- */
-  const btn7 = document.getElementById('ch7-go');
+  /* -------- 第 7 章：用 F12 觀察 API（示範請求） -------- */
+  const btnF12 = document.getElementById('f12-go');
+  if (btnF12) {
+    btnF12.addEventListener('click', async () => {
+      const status = document.getElementById('f12-status');
+      const out = document.getElementById('f12-out');
+      status.innerHTML = `<span class="spinner"></span> 正在送出請求…（記得先開 F12 → Network）`;
+      out.innerHTML = '';
+
+      const r = await kmbFetch(Endpoints.routeList());
+      status.innerHTML = `${statusPill(r)}　${esc(r.url)}　耗時 ${r.ms} ms`;
+      const list = (r.data && r.data.data) || [];
+      out.innerHTML = `<p class="muted" style="margin-top:8px">這次請求已經留在 Network 面板（以及下方「請求記錄」）中。回應共 ${Array.isArray(list) ? list.length : 0} 條路線。</p>`;
+    });
+  }
+
+  /* -------- 第 8 章：輸入路線，顯示目的地 -------- */
+  const btn7 = document.getElementById('ch8-go');
   if (btn7) {
     btn7.addEventListener('click', async () => {
-      const route = document.getElementById('ch7-route').value.trim();
-      const status = document.getElementById('ch7-status');
-      const out = document.getElementById('ch7-out');
+      const route = document.getElementById('ch8-route').value.trim();
+      const status = document.getElementById('ch8-status');
+      const out = document.getElementById('ch8-out');
       if (!route) { status.textContent = '請先輸入路線號。'; return; }
       status.innerHTML = `<span class="spinner"></span> 查詢中…`;
       out.innerHTML = '';

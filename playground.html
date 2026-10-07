@@ -61,12 +61,27 @@
       <div id="pg-out"></div>
     </div>
 
+    <!-- 請求記錄（迷你版 F12 Network） -->
+    <div class="card">
+      <div class="spread">
+        <h3 class="mt0">③ 請求記錄（迷你版 F12 Network）</h3>
+        <div class="flex">
+          <span class="muted" id="req-log-count"></span>
+          <button class="btn btn-ghost btn-sm" id="req-log-clear">清除</button>
+        </div>
+      </div>
+      <p class="muted">每一次本站向 API 發出的請求，都會即時列在這裡——就像瀏覽器的 F12 → Network 面板。</p>
+      <div class="req-log" id="req-log-body"></div>
+    </div>
+
   </div>
 
   <div class="note" style="margin-top:22px">
     <strong>小提示</strong>
     想看得更仔細嗎？在瀏覽器按 <code class="inline">F12</code> 打開開發者工具，切到 <b>Network（網路）</b> 面板，
     再按一次「送出請求」，就能看到這個請求的所有細節（網址、標頭、回應）。這就是除錯 API 的方法。
+    不想開 F12？往上看 <b>③ 請求記錄</b>，它把 Network 的重點直接畫在頁面上。
+    （完整教學見 <a href="tutorial.html#ch7">第 7 章：用 F12 觀察 API</a>。）
   </div>
 </section>
 
