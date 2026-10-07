@@ -5,6 +5,9 @@
 
 資料來源：[data.etabus.gov.hk](https://data.etabus.gov.hk)（依官方兩份 PDF 規格整理）。
 
+> 🌐 **線上版（GitHub Pages）**：<https://betatalau.github.io/kmb-bus-api/>
+> 用 iPhone 的 Safari 打開 → 分享 → 加入主畫面，即可當 App 使用。
+
 ---
 
 ## 一、怎麼用？（最簡單）
