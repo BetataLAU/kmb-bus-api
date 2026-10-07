@@ -31,6 +31,11 @@
     <a href="#ch8">8. 用 JS 呼叫 API</a>
     <a href="#ch9">9. 組合實戰</a>
     <a href="#ch10">10. 打造自己的 API</a>
+    <a href="#ch11">11. 一次呼叫解剖</a>
+    <a href="#ch12">12. HTTP 動詞與 CRUD</a>
+    <a href="#ch13">13. Headers 與認證</a>
+    <a href="#ch14">14. 同步 vs 非同步</a>
+    <a href="#ch15">15. 讀規格書＋小辭典</a>
   </aside>
 
   <article class="article">
@@ -733,14 +738,255 @@ function proxyKMB(req, res) {
         <p>用 <code class="inline">node server.js</code> 把網站跑起來，然後在瀏覽器打開 <code class="inline">http://localhost:3000/api/hello</code>，看看你自己的 API 回傳什麼。
         再試試把 <code class="inline">/api/hello</code> 改成一條會回傳「現在時間 + 一句隨機鼓勵語」的 API。</p>
       </div>
+    </section>
+
+    <!-- ============ 第 11 章 ============ -->
+    <section class="chapter" id="ch11">
+      <div class="kicker">第 11 章</div>
+      <h2>一次呼叫的完整解剖</h2>
+      <p class="lead-q">前面散著學，這一章把它們拼起來：<strong>一次 API 呼叫 ＝ 請求（你講的話）＋ 回應（對方回的話）</strong>。</p>
+
+      <h3>① 請求 Request：你要講的話，有 4 個部分</h3>
+      <table class="data">
+        <tr><th>部分</th><th>白話解釋</th><th>KMB 例子</th></tr>
+        <tr><td><b>1. URL（網址）</b></td><td>你要找「哪個功能」</td><td><code>/v1/transport/kmb/route/74B/outbound/1</code></td></tr>
+        <tr><td><b>2. Method（動詞）</b></td><td>你要「做什麼動作」</td><td><span class="pill get">GET</span>（讀取）</td></tr>
+        <tr><td><b>3. Headers（標頭）</b></td><td>附帶的說明小紙條（我是誰、要什麼格式）</td><td><code>Accept: application/json</code></td></tr>
+        <tr><td><b>4. Body（內文）</b></td><td>真正要送的資料內容（通常是 JSON）</td><td>GET 請求通常<b>沒有</b> Body</td></tr>
+      </table>
+
+      <h3>② 網址再拆兩段：門牌 ＋ 路徑</h3>
+      <pre class="code">https://data.etabus.gov.hk    /v1/transport/kmb/route/74B/outbound/1
+└──────── Base URL（門牌）───┘ └──────── Path（要做的事）────────┘</pre>
+      <ul class="clean">
+        <li><b>Base URL</b>：API 的「門牌」。KMB 只有一個：<code class="inline">https://data.etabus.gov.hk</code>。</li>
+        <li><b>Path</b>：同一門牌底下的不同功能，例如 <code class="inline">/route/</code>（路線清單）、<code class="inline">/stop-eta/…</code>（到站時間）。</li>
+      </ul>
+
+      <h3>③ 回應 Response：對方回你的話，有 3 個部分</h3>
+      <table class="data">
+        <tr><th>部分</th><th>白話解釋</th><th>KMB 例子</th></tr>
+        <tr><td><b>1. 狀態碼</b></td><td>一個數字，代表成功還是失敗</td><td><span class="pill ok">200</span> <span class="pill err">422</span></td></tr>
+        <tr><td><b>2. Headers</b></td><td>額外說明（例如回傳格式）</td><td><code>Content-Type: application/json</code></td></tr>
+        <tr><td><b>3. Body</b></td><td>真正的答案（JSON 資料或錯誤訊息）</td><td><code>{ "type": "Route", "data": [ … ] }</code></td></tr>
+      </table>
+
+      <div class="tip">
+        <strong>一句話背起來</strong>
+        請求 ＝ 網址 ＋ 動詞 ＋ 標頭 ＋ 內文；回應 ＝ 狀態碼 ＋ 標頭 ＋ 內文。
+        任何 API 文件，其實都在回答這兩件事。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>用 <a href="playground.html">互動測試台</a> 送出「指定路線」查詢，然後對照上面兩張表：網址、動詞、狀態碼、回應 Body 各是什麼？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 12 章 ============ -->
+    <section class="chapter" id="ch12">
+      <div class="kicker">第 12 章</div>
+      <h2>HTTP 動詞與 CRUD</h2>
+      <p class="lead-q">動詞決定你「對資料做什麼」。最常見的四個，剛好對應資料的四種操作，合稱 <strong>CRUD</strong>（增、查、改、刪）。</p>
+
+      <table class="data">
+        <tr><th>動詞</th><th>意思</th><th>CRUD</th><th>KMB 有嗎？</th></tr>
+        <tr><td><span class="pill get">GET</span></td><td>讀取（拿東西回來，不改動）</td><td>查 Read</td><td>✅ 全部端點都是 GET</td></tr>
+        <tr><td><span class="pill warn">POST</span></td><td>新增（送新資料上去）</td><td>增 Create</td><td>—（KMB 唯讀）</td></tr>
+        <tr><td><span class="pill warn">PUT</span></td><td>更新（改掉現有資料）</td><td>改 Update</td><td>—</td></tr>
+        <tr><td><span class="pill err">DELETE</span></td><td>刪除</td><td>刪 Delete</td><td>—</td></tr>
+      </table>
+      <div class="tip">
+        <strong>小技巧</strong>
+        看動詞就知道會不會改到資料。<b>GET 唯讀、最安全</b>（KMB 全部都是 GET，隨便測都無害）；
+        POST / PUT / DELETE 會改資料，測試前要小心，最好使用測試環境。
+      </div>
+
+      <h3>常用狀態碼一覽（補充第 6 章）</h3>
+      <p>第 6 章學過 200 / 422 / 500。真實世界的 API 還會回下面這些，先認識一下就不會慌：</p>
+      <table class="data">
+        <tr><th>代碼</th><th>意思</th><th>什麼情況</th></tr>
+        <tr><td><span class="pill ok">200</span></td><td>OK 成功</td><td>一般請求成功</td></tr>
+        <tr><td><span class="pill ok">202</span></td><td>Accepted 已接受</td><td>非同步請求，稍後才處理（見第 14 章）</td></tr>
+        <tr><td><span class="pill err">400</span></td><td>Bad Request</td><td>參數有錯或缺欄位</td></tr>
+        <tr><td><span class="pill err">401</span></td><td>Unauthorized</td><td>沒帶 token 或 token 過期（見第 13 章）</td></tr>
+        <tr><td><span class="pill err">403</span></td><td>Forbidden</td><td>有登入但沒有權限用這個功能</td></tr>
+        <tr><td><span class="pill err">404</span></td><td>Not Found</td><td>網址或資料不存在</td></tr>
+        <tr><td><span class="pill err">422</span></td><td>Unprocessable</td><td>參數格式不合法（KMB 常用）</td></tr>
+        <tr><td><span class="pill warn">429</span></td><td>Too Many Requests</td><td>送太快，被限流量</td></tr>
+        <tr><td><span class="pill warn">500</span></td><td>Internal Server Error</td><td>對方系統出錯</td></tr>
+        <tr><td><span class="pill warn">504</span></td><td>Gateway Timeout</td><td>對方處理太久</td></tr>
+      </table>
+      <div class="note">
+        <strong>記法</strong>
+        <b>2xx</b> ＝ 成功；<b>4xx</b> ＝ 你（請求方）的問題，回頭檢查自己送的東西；<b>5xx</b> ＝ 對方（伺服器）的問題，通常只能等或重試。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>在測試台故意送一個「方向拼錯」的請求（例如 direction 打 <code class="inline">sideways</code>），你會拿到 <b>422</b>。想想：這是 4xx 還是 5xx？是誰的問題？該改自己，還是等對方？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 13 章 ============ -->
+    <section class="chapter" id="ch13">
+      <div class="kicker">第 13 章</div>
+      <h2>Headers 與認證：你是誰？</h2>
+      <p class="lead-q">很多 API 不是誰都能問。Headers（標頭）就是夾在請求裡的「小紙條」，用來講<strong>你是誰、你帶了什麼鑰匙</strong>。</p>
+
+      <h3>常見的標頭</h3>
+      <table class="data">
+        <tr><th>標頭</th><th>作用</th><th>例子</th></tr>
+        <tr><td><code>Content-Type</code></td><td>「我送的資料是什麼格式」</td><td><code>application/json</code></td></tr>
+        <tr><td><code>Accept</code></td><td>「我希望你回什麼格式」</td><td><code>application/json</code></td></tr>
+        <tr><td><code>Authorization</code></td><td>「我是誰」的身分證明（token）</td><td><code>Bearer eyJh…</code></td></tr>
+        <tr><td><code>x-api-key</code></td><td>「我公司專屬的鑰匙」（固定不變）</td><td><code>Cw5Pfecp…</code></td></tr>
+      </table>
+
+      <h3>KMB 需要認證嗎？不用。</h3>
+      <p>九巴的開放資料 API 是<b>公開</b>的，不需要註冊、不需要金鑰。我們只帶一個 <code class="inline">Accept: application/json</code> 就夠了：</p>
+      <pre class="code">fetch('https://data.etabus.gov.hk/v1/transport/kmb/route/', {
+  headers: { Accept: 'application/json' }
+});</pre>
+      <div class="note">
+        <strong>但真實世界多半要認證</strong>
+        付費或內部 API 通常要「兩層身分」——就像進大樓要同時出示「門禁卡（API Key）」和「臨時通行證（Token）」。
+      </div>
+
+      <h3>① API Key：固定的大樓門禁卡</h3>
+      <p>代表「你這家公司」，<b>固定不變</b>，通常放在 <code class="inline">x-api-key</code> 這類標頭裡。</p>
+
+      <h3>② Token：會過期的臨時通行證</h3>
+      <p>先用 <code class="inline">client_id</code> + <code class="inline">client_secret</code> 去「登入」，換回一張 token，之後每個請求都帶著它，過期了再換新的：</p>
+      <pre class="code">① 送 client_id + client_secret  →  換回 { "access_token": "…", "expires_in": 300 }
+② 之後每個請求帶：Authorization: Bearer &lt;access_token&gt;
+③ token 過期（例如 5 分鐘）→ 回到步驟 ① 換一張新的</pre>
+      <p>這種「用帳密換 token」的標準做法叫 <b>OAuth 2.0 client_credentials</b>。</p>
+
+      <h3>③ mTLS：連證件都要互相檢查</h3>
+      <p>普通網站只確認「網站是真的」。<b>mTLS（雙向憑證）</b>則要求你也出示一張只有你有的證件，常用在金融、機場等高安全場景。它需要一對檔案：</p>
+      <ul class="clean">
+        <li><b>憑證（certificate）</b>：像身分證，可以公開。</li>
+        <li><b>私鑰（private key）</b>：像印章，<b>絕對不能外流</b>。</li>
+      </ul>
+
+      <div class="tip">
+        <strong>為什麼金鑰要「藏起來」？</strong>
+        金鑰、token、私鑰都不能直接寫在網頁原始碼裡（會被看光）——這正是第 10 章「自己蓋一層 API」要把祕密放在<b>伺服器</b>的原因。
+      </div>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>用 F12 → Network 打開本站任一請求，點進去看 <b>Request Headers</b>。我們送了哪些標頭？有沒有 <code class="inline">Authorization</code>？為什麼沒有？</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 14 章 ============ -->
+    <section class="chapter" id="ch14">
+      <div class="kicker">第 14 章</div>
+      <h2>同步 vs 非同步</h2>
+      <p class="lead-q">有些 API「當場就回答你」，有些「先說收到了、之後再通知你」。這兩種模式要分清楚。</p>
+
+      <table class="data">
+        <tr><th>類型</th><th>白話</th><th>狀態碼</th></tr>
+        <tr><td><b>同步 Sync</b></td><td>你問完，對方<b>當場</b>回答</td><td><span class="pill ok">200</span></td></tr>
+        <tr><td><b>非同步 Async</b></td><td>先回「收到了」，<b>處理完再通知你</b></td><td><span class="pill ok">202</span></td></tr>
+      </table>
+
+      <p>為什麼要非同步？因為有些工作很慢（例如要再轉送給第三方、跑報表），不可能讓你一直等：</p>
+      <pre class="code">你 ──送出請求──► 伺服器：「收到了！」(202 Accepted)
+                   │   （背後慢慢處理）
+                   ▼
+             處理完成後，用「Callback」把結果送回你事先提供的網址</pre>
+      <p>那個「事後通知你的網址」叫 <b>Callback URL</b>；若沒有 callback，也可以過一會再用「查詢 API」去看結果。</p>
+
+      <div class="note">
+        <strong>KMB 是哪一種？</strong>
+        KMB 全部是<b>同步</b>：你按下去，它立刻回 <span class="pill ok">200</span> 和一包資料，不需要 callback。這也是它適合初學的原因。
+      </div>
+
+      <h3>延伸：在 JSON 裡找欄位（JSON Path）</h3>
+      <p>規格書常寫 <code class="inline">$.data.route</code> 這種路徑，那個 <code class="inline">$.</code> 開頭的就叫 <b>JSON Path</b>——「從最外層一層一層找到這個欄位」的地圖：</p>
+      <pre class="code">KMB 回應結構：
+{
+  "type": "Route",
+  "version": "1.0",
+  "data": { "route": "74B", "bound": "O", "orig_tc": "…", "dest_tc": "…" }
+}
+
+$.type        → "Route"
+$.data        → { route: "74B", … }
+$.data.route  → "74B"
+$.data.bound  → "O"</pre>
+      <p>看懂 JSON Path，就能把規格書上的欄位，對到程式裡的取值方式。</p>
+
+      <div class="exercise">
+        <h4>✏️ 小練習</h4>
+        <p>在測試台查 <code class="inline">74B</code> 的路線資料，看回應 JSON，試著寫出「目的地」的 JSON Path（提示：<code class="inline">$.data.dest_tc</code>）。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第 15 章 ============ -->
+    <section class="chapter" id="ch15">
+      <div class="kicker">第 15 章（總結）</div>
+      <h2>讀懂 API 規格書</h2>
+      <p class="lead-q">真實世界的 API 都附一份「規格書」。看懂一份，就看得懂全部——因為它們的<strong>格式幾乎一樣</strong>。</p>
+
+      <h3>規格書通常長這樣（每支 API 都同一套）</h3>
+      <ol>
+        <li><b>URI（網址）</b>：這支功能的路徑。</li>
+        <li><b>HTTP Method</b>：動詞（GET / POST…）。</li>
+        <li><b>參數表</b>：路徑參數、查詢參數各自的欄位與說明。</li>
+        <li><b>Request Body 欄位表</b>（POST 才有）：每個欄位的名稱、型別、是否必填（Y 必填 / N 選填 / C 有條件必填）。</li>
+        <li><b>Sample Request / Response</b>（最好用的一段）：直接抄範例，改成你的資料。</li>
+      </ol>
+      <p>本站的 <a href="api-reference.html">API 文件</a> 就是把 KMB 官方規格整理成這樣一頁，隨手可查。</p>
+
+      <div class="tip">
+        <strong>讀規格書的順序</strong>
+        先看 Method 與 URI → 再看參數表（哪些必填）→ 最後抄 Sample。九成問題都出在「參數打錯或漏填」。
+      </div>
+
+      <h3>小辭典（看到這些詞不用怕）</h3>
+      <ul class="glossary">
+        <li><b>API</b>：兩個程式互相對話的規則</li>
+        <li><b>Endpoint / Path</b>：某個功能的網址路徑</li>
+        <li><b>Base URL</b>：環境的門牌（KMB 只有一個）</li>
+        <li><b>Request / Response</b>：請求 / 回應</li>
+        <li><b>HTTP Method</b>：動詞（GET / POST / PUT / DELETE）</li>
+        <li><b>Header</b>：附在請求／回應上的說明小紙條</li>
+        <li><b>Body</b>：真正要傳的資料內容</li>
+        <li><b>Status Code</b>：表示成功失敗的數字</li>
+        <li><b>JSON</b>：一種資料格式（<code class="inline">{}</code> 物件、<code class="inline">[]</code> 清單）</li>
+        <li><b>JSON Path</b>：在 JSON 裡找欄位的地圖（<code class="inline">$.a.b</code>）</li>
+        <li><b>Query Parameter</b>：<code class="inline">?key=value</code> 形式的查詢條件</li>
+        <li><b>Path Parameter</b>：寫在路徑裡的變數，如 <code class="inline">/route/{route}</code></li>
+        <li><b>Token / JWT</b>：登入後拿到的臨時通行證，會過期</li>
+        <li><b>API Key</b>：公司專屬的固定鑰匙</li>
+        <li><b>mTLS</b>：雙方都出示憑證的加密連線</li>
+        <li><b>OAuth2</b>：用 client_id + secret 換 token 的登入方式</li>
+        <li><b>Sync / Async</b>：當場回答 / 稍後通知</li>
+        <li><b>Callback URL</b>：非同步處理完後通知你的網址</li>
+        <li><b>CRUD</b>：增 Create、查 Read、改 Update、刪 Delete</li>
+        <li><b>CORS</b>：瀏覽器跨網域呼叫的限制（可用代理繞過）</li>
+      </ul>
+
+      <h3>最後：記住這 3 句話</h3>
+      <div class="note" style="padding:16px 18px">
+        <ol style="margin:0; padding-left:20px">
+          <li><b>API 就是服務生</b>：你不能進廚房，只能照菜單點餐。</li>
+          <li><b>一次呼叫 ＝ 請求（網址＋動詞＋標頭＋內文）＋ 回應（狀態碼＋標頭＋內文）</b>。</li>
+          <li><b>看狀態碼就知道結果</b>：2xx 成功、4xx 你的問題、5xx 對方的問題。</li>
+        </ol>
+      </div>
 
       <div class="card tint-red" style="margin-top:20px">
-        <h3>接下來去哪裡？</h3>
-        <p>三條建議路線：</p>
+        <h3>🎉 完整課程到此結束</h3>
+        <p>你已經從「什麼是 API」一路學到「看懂規格書、動手做出 App」。接下來最好的練習：</p>
         <ul class="clean">
           <li>🧪 到 <a href="playground.html">互動測試台</a> 把 9 個端點全部玩一遍，觀察不同的回應。</li>
-          <li>🚌 用 <a href="bus-app.html">巴士 App</a> 試不同路線，並在瀏覽器按 F12 看 Network 面板，觀察每次 fetch 送出的請求。</li>
-          <li>📚 打開 <a href="api-reference.html">API 文件</a>，對照每個欄位的定義，理解 Data Dictionary 的內容。</li>
+          <li>🚌 用 <a href="bus-app.html">巴士 App</a> 試不同路線，並按 <b>F12 → Network</b> 觀察每次 fetch 送出的請求。</li>
+          <li>📚 打開 <a href="api-reference.html">API 文件</a>，對照每個欄位的定義（Data Dictionary）。</li>
         </ul>
       </div>
     </section>

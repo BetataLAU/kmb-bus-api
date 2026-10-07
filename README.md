@@ -38,12 +38,12 @@ node server.js
 | 頁面 | 內容 |
 |------|------|
 | `index.html` | 首頁 + 學習路線圖 + API 總覽 |
-| `tutorial.html` | **10 章教學**（由淺入深），每章有可互動的實戰按鈕 |
+| `tutorial.html` | **15 章教學**（由淺入深），每章有可互動的實戰按鈕 |
 | `playground.html` | **互動測試台**：選端點、填參數、送出、看 JSON |
 | `bus-app.html` | **實用巴士 App**：查路線 → 看站點 → 即時到站（30 秒自動更新） |
 | `api-reference.html` | **API 參考文件**：端點與欄位對照表（整理自兩份 PDF） |
 
-### 教學 10 章
+### 教學 15 章
 1. 什麼是 API？（餐廳比喻）
 2. 認識 HTTP 請求（方法 / URL / 參數 / 標頭）
 3. 什麼是 JSON？
@@ -54,6 +54,11 @@ node server.js
 8. 用 JavaScript 呼叫 API
 9. 組合實戰：做一個到站 App
 10. 進階：打造自己的 API（代理伺服器）
+11. 一次呼叫的完整解剖（請求 4 要素 × 回應 3 要素）
+12. HTTP 動詞與 CRUD（＋常用狀態碼一覽）
+13. Headers 與認證（API Key／Token／mTLS）
+14. 同步 vs 非同步（＋JSON Path）
+15. 讀懂 API 規格書（＋名詞小辭典、記住 3 句話）
 
 ---
 
@@ -62,7 +67,7 @@ node server.js
 ```
 Bus API/
 ├─ index.html            首頁
-├─ tutorial.html         10 章教學
+├─ tutorial.html         15 章教學
 ├─ playground.html       互動測試台
 ├─ bus-app.html          實時到站 App
 ├─ api-reference.html    API 參考文件
