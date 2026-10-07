@@ -102,15 +102,18 @@
       <p class="lead-q">每個 API「請求」其實就是一句話：<strong>用什麼方法（Method），去哪裡（URL）拿東西。</strong></p>
 
       <h3>① 方法（HTTP Method）</h3>
-      <p>最常用的四種動詞，對應「資料的四種動作」：</p>
-      <table class="data">
-        <tr><th>方法</th><th>意思</th><th>比喻</th></tr>
-        <tr><td><code>GET</code></td><td>讀取資料</td><td>看菜單、點一份餐</td></tr>
-        <tr><td><code>POST</code></td><td>新增資料</td><td>填單新加入會員</td></tr>
-        <tr><td><code>PUT</code> / <code>PATCH</code></td><td>更新資料</td><td>修改你的會員資料</td></tr>
-        <tr><td><code>DELETE</code></td><td>刪除資料</td><td>取消訂閱</td></tr>
-      </table>
-      <p>👍 好消息：KMB 的 API <b>全部都是 <code class="inline">GET</code></b>（我們只讀取資料，不修改），所以只要先學 GET 就夠了！</p>
+      <p>請求的第一件事，是決定「用什麼動詞」。最常用的是這四個：</p>
+      <p>
+        <span class="pill get">GET</span> 讀取　
+        <span class="pill warn">POST</span> 新增　
+        <span class="pill warn">PUT</span> 更新　
+        <span class="pill err">DELETE</span> 刪除
+      </p>
+      <p>👍 好消息：KMB 的 API <b>全部都是 <code class="inline">GET</code></b>（我們只讀取資料、不修改），所以只要先學 GET 就夠了！</p>
+      <div class="note">
+        <strong>四種動詞的完整對照 → 第 12 章</strong>
+        這裡先知道有這四個就好。它們各自對應哪種 CRUD 動作、會不會改到資料，第 12 章〈HTTP 動詞與 CRUD〉會用一張表講清楚，還有能動手玩的「動詞實驗室」。
+      </div>
 
       <h3>② 網址（URL）拆解</h3>
       <p>把一個完整的 API 網址拆開看，其實一目了然：</p>
@@ -807,7 +810,7 @@ function proxyKMB(req, res) {
     <section class="chapter" id="ch12">
       <div class="kicker">第 12 章</div>
       <h2>HTTP 動詞與 CRUD</h2>
-      <p class="lead-q">動詞決定你「對資料做什麼」。最常見的四個，剛好對應資料的四種操作，合稱 <strong>CRUD</strong>（增、查、改、刪）。</p>
+      <p class="lead-q">第 2 章先認識了「動詞」，這一章把它講完整：最常見的四個動詞，剛好對應資料的四種操作，合稱 <strong>CRUD</strong>（增、查、改、刪）。</p>
 
       <table class="data">
         <tr><th>動詞</th><th>意思</th><th>CRUD</th><th>KMB 有嗎？</th></tr>
