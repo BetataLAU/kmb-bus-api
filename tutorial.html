@@ -19,23 +19,32 @@
 
 <div class="layout">
   <!-- 側邊目錄 -->
-  <aside class="toc">
-    <h4>課程目錄</h4>
-    <a href="#ch1">1. 什麼是 API？</a>
-    <a href="#ch2">2. 認識 HTTP 請求</a>
-    <a href="#ch3">3. 什麼是 JSON？</a>
-    <a href="#ch4">4. 你的第一個請求</a>
-    <a href="#ch5">5. 路徑與參數</a>
-    <a href="#ch6">6. 狀態碼與錯誤</a>
-    <a href="#ch7">7. 用 F12 觀察 API</a>
-    <a href="#ch8">8. 用 JS 呼叫 API</a>
-    <a href="#ch9">9. 組合實戰</a>
-    <a href="#ch10">10. 打造自己的 API</a>
-    <a href="#ch11">11. 一次呼叫解剖</a>
-    <a href="#ch12">12. HTTP 動詞與 CRUD</a>
-    <a href="#ch13">13. Headers 與認證</a>
-    <a href="#ch14">14. 同步 vs 非同步</a>
-    <a href="#ch15">15. 讀規格書＋小辭典</a>
+  <aside class="toc" id="toc">
+    <div class="toc-head">
+      <h4>課程目錄</h4>
+      <button type="button" class="toc-toggle" id="toc-toggle"
+              aria-expanded="true" aria-controls="toc-links"
+              aria-label="展開或收合課程目錄" title="展開／收合目錄">
+        <span class="bars" aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav class="toc-links" id="toc-links">
+      <a href="#ch1">1. 什麼是 API？</a>
+      <a href="#ch2">2. 認識 HTTP 請求</a>
+      <a href="#ch3">3. 什麼是 JSON？</a>
+      <a href="#ch4">4. 你的第一個請求</a>
+      <a href="#ch5">5. 路徑與參數</a>
+      <a href="#ch6">6. 狀態碼與錯誤</a>
+      <a href="#ch7">7. 用 F12 觀察 API</a>
+      <a href="#ch8">8. 用 JS 呼叫 API</a>
+      <a href="#ch9">9. 組合實戰</a>
+      <a href="#ch10">10. 打造自己的 API</a>
+      <a href="#ch11">11. 一次呼叫解剖</a>
+      <a href="#ch12">12. HTTP 動詞與 CRUD</a>
+      <a href="#ch13">13. Headers 與認證</a>
+      <a href="#ch14">14. 同步 vs 非同步</a>
+      <a href="#ch15">15. 讀規格書＋小辭典</a>
+    </nav>
   </aside>
 
   <article class="article">

@@ -403,6 +403,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* -------- 側邊目錄：三橫線鈕展開／收合 -------- */
+  const tocEl = document.getElementById('toc');
+  const tocToggle = document.getElementById('toc-toggle');
+  if (tocEl && tocToggle) {
+    const layoutEl = document.querySelector('.layout');
+    const setToc = (open) => {
+      tocEl.classList.toggle('collapsed', !open);
+      if (layoutEl) layoutEl.classList.toggle('toc-collapsed', !open);
+      tocToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    tocToggle.addEventListener('click', () =>
+      setToc(tocToggle.getAttribute('aria-expanded') !== 'true'));
+    /* 手機：點選章節後自動收合，把空間還給文章 */
+    tocEl.querySelectorAll('.toc-links a').forEach(a => {
+      a.addEventListener('click', () => {
+        if (window.matchMedia('(max-width: 900px)').matches) setToc(false);
+      });
+    });
+  }
+
   /* -------- 側邊目錄：捲動時高亮目前章節 -------- */
   const chapters = Array.from(document.querySelectorAll('.chapter'));
   const tocLinks = Array.from(document.querySelectorAll('.toc a'));

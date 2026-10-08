@@ -378,6 +378,41 @@ label.flex { font-weight: 600; }
 .toc a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--muted); }
 .toc a:hover { background: var(--bg); text-decoration: none; color: var(--ink); }
 .toc a.active { background: var(--red-soft); color: var(--red-dark); font-weight: 700; }
+/* ---------- 側邊目錄：三橫線收合鈕 ---------- */
+.toc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin: 0 0 8px;
+}
+.toc-head h4 { margin: 0; }
+.toc-toggle {
+  flex: none; width: 34px; height: 34px; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: 9px; background: var(--card);
+  transition: background .2s ease, border-color .2s ease;
+}
+.toc-toggle:hover { background: var(--bg); }
+.toc-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 三橫線圖示（純 CSS，不依賴圖片） */
+.toc-toggle .bars,
+.toc-toggle .bars::before,
+.toc-toggle .bars::after {
+  content: ""; display: block; width: 16px; height: 2px;
+  border-radius: 2px; background: var(--ink);
+}
+.toc-toggle .bars { position: relative; }
+.toc-toggle .bars::before { position: absolute; left: 0; top: -5px; }
+.toc-toggle .bars::after  { position: absolute; left: 0; top: 5px; }
+/* 收合狀態：隱藏章節連結，只留標題列 */
+.toc.collapsed .toc-links { display: none; }
+.toc.collapsed .toc-toggle { background: var(--red-soft); border-color: transparent; }
+/* 桌面：收合時把側欄縮成細長一條，內文自動變寬 */
+@media (min-width: 901px) {
+  .layout.toc-collapsed { grid-template-columns: 64px 1fr; gap: 24px; }
+  .toc.collapsed .toc-head { justify-content: center; }
+  .toc.collapsed .toc-head h4 { display: none; }
+}
+
+
 
 .article { min-width: 0; }
 .chapter { scroll-margin-top: 80px; margin-bottom: 54px; }
